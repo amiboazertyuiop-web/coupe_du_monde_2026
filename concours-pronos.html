@@ -219,6 +219,36 @@ header.topbar {
 }
 .settings-info-value.empty { color: var(--text-faint); font-style: italic; }
 
+/* ============ VOIR PRONOS ============ */
+.player-pronos-card {
+  padding: 16px;
+  background: var(--bg-0); border: 1px solid var(--border);
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all .15s;
+  display: flex; align-items: center; gap: 14px;
+}
+.player-pronos-card:hover {
+  border-color: var(--border-hover);
+  background: var(--bg-2);
+  transform: translateY(-1px);
+}
+.player-pronos-avatar {
+  width: 42px; height: 42px; border-radius: 10px;
+  background: linear-gradient(135deg, var(--blue), var(--purple));
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 700; font-size: 16px; color: #fff;
+  flex-shrink: 0;
+}
+.player-pronos-info { flex: 1; }
+.player-pronos-name { font-weight: 600; font-size: 15px; }
+.player-pronos-meta {
+  font-size: 12px; color: var(--text-dim);
+  font-family: 'JetBrains Mono', monospace;
+  margin-top: 2px;
+}
+.player-pronos-arrow { color: var(--text-faint); font-size: 18px; }
+
 /* ============ NAV TABS ============ */
 nav.tabs {
   max-width: 1400px; margin: 0 auto;
@@ -929,7 +959,8 @@ main { max-width: 1400px; margin: 0 auto; padding: 32px 24px 80px; }
       </div>
     </div>
     <nav class="tabs" id="tabsNav">
-      <button data-view="pronos" data-roles="admin"><span class="tab-icon">📝</span>Pronostics</button>
+      <button data-view="pronos" data-roles="admin"><span class="tab-icon">📝</span>Saisie pronos</button>
+      <button data-view="voir-pronos" data-roles="admin,referee,viewer"><span class="tab-icon">👁️</span>Pronostics</button>
       <button data-view="results" data-roles="admin,referee"><span class="tab-icon">⚽</span>Résultats</button>
       <button data-view="ranking" data-roles="admin,referee,viewer"><span class="tab-icon">🏆</span>Classement</button>
       <button data-view="admin" data-roles="admin"><span class="tab-icon">⚙️</span>Administration</button>
@@ -1001,6 +1032,17 @@ main { max-width: 1400px; margin: 0 auto; padding: 32px 24px 80px; }
         </div>
         <div id="rankingTableContainer"></div>
       </div>
+    </section>
+
+    <!-- ========== VOIR PRONOS VIEW ========== -->
+    <section class="view" id="view-voir-pronos">
+      <div class="page-title">Pronostics des joueurs</div>
+      <div class="page-sub">Consulte les pronostics de chaque participant</div>
+
+      <div class="search-bar" style="margin-bottom:20px">
+        <input type="text" id="voirPronosSearch" placeholder="Rechercher un joueur...">
+      </div>
+      <div class="players-admin-list" id="voirPronosList" style="grid-template-columns:repeat(auto-fill,minmax(280px,1fr))"></div>
     </section>
 
     <!-- ========== ADMIN VIEW ========== -->
@@ -1384,7 +1426,7 @@ function showApp() {
   // Vue par défaut selon le rôle
   if (role === 'admin')        switchView('pronos');
   else if (role === 'referee') switchView('results');
-  else                         switchView('ranking');
+  else                         switchView('voir-pronos');
 }
 
 /* ============================================================
@@ -1398,6 +1440,7 @@ function switchView(view) {
   $$('nav.tabs button').forEach(b => b.classList.toggle('active', b.dataset.view === view));
   $$('.view').forEach(v => v.classList.toggle('active', v.id === `view-${view}`));
   if (view === 'pronos') renderPronos();
+  if (view === 'voir-pronos') renderVoirPronos();
   if (view === 'results') renderResults();
   if (view === 'ranking') renderRanking();
   if (view === 'admin') renderAdmin();
@@ -1520,11 +1563,61 @@ $('#pronosSubmit').addEventListener('click', async () => {
   const { error: prErr } = await sb.from('pronos').insert(pronoRows);
   if (prErr) { toast('Erreur pronos : ' + prErr.message, 'error'); return; }
 
+  // Créer automatiquement un compte spectateur pour ce joueur
+  const username = name.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]/g, '');
+  const { error: accErr } = await sb.rpc('create_account', { p_username: username, p_password: '123456', p_role: 'viewer' });
+  let accountMsg = '';
+  if (!accErr) {
+    accountMsg = ` · Compte créé : ${username}`;
+  }
+
   await loadFromSupabase();
   draftPronos = {};
   $('#newPlayerName').value = '';
   renderPronos();
-  toast(`✓ ${name} ajouté avec succès`);
+  toast(`✓ ${name} ajouté avec succès${accountMsg}`);
+});
+
+/* ============================================================
+ * VUE VOIR PRONOS (lecture seule)
+ * ============================================================ */
+function renderVoirPronos(filter = '') {
+  const container = $('#voirPronosList');
+  const filtered = state.players
+    .filter(p => !filter || p.name.toLowerCase().includes(filter.toLowerCase()))
+    .sort((a, b) => a.name.localeCompare(b.name));
+
+  if (filtered.length === 0) {
+    container.innerHTML = `
+      <div class="empty-state" style="grid-column:1/-1">
+        <div class="emoji">📋</div>
+        <h3>${filter ? 'Aucun résultat' : 'Aucun joueur'}</h3>
+        <p>${filter ? 'Essaie un autre nom' : 'Les pronostics apparaîtront ici une fois saisis'}</p>
+      </div>`;
+    return;
+  }
+
+  container.innerHTML = filtered.map(p => {
+    const stats = computePlayerStats(p);
+    return `
+      <div class="player-pronos-card" data-view-player="${p.id}">
+        <div class="player-pronos-avatar">${p.name[0].toUpperCase()}</div>
+        <div class="player-pronos-info">
+          <div class="player-pronos-name">${p.name}</div>
+          <div class="player-pronos-meta">${stats.total} pts · ${stats.exact} exacts · ${stats.played}/72 joués</div>
+        </div>
+        <div class="player-pronos-arrow">›</div>
+      </div>
+    `;
+  }).join('');
+
+  container.querySelectorAll('[data-view-player]').forEach(card => {
+    card.addEventListener('click', () => openPlayerDetail(card.dataset.viewPlayer));
+  });
+}
+
+$('#voirPronosSearch').addEventListener('input', (e) => {
+  renderVoirPronos(e.target.value);
 });
 
 /* ============================================================
