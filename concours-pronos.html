@@ -375,6 +375,13 @@ main { max-width: 1400px; margin: 0 auto; padding: 32px 24px 80px; }
 }
 .score-input:focus { outline: none; color: var(--accent); }
 .score-sep { color: var(--text-faint); font-weight: 700; }
+.match-datetime {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px; color: var(--text-faint);
+  text-align: center;
+  margin-bottom: 4px;
+  letter-spacing: .02em;
+}
 
 /* ============ BUTTONS ============ */
 .btn {
@@ -809,6 +816,7 @@ main { max-width: 1400px; margin: 0 auto; padding: 32px 24px 80px; }
   }
   .team-name { font-size: 11px; gap: 4px; }
   .team-flag { width: 18px; height: 12px; }
+  .match-datetime { font-size: 9px; margin-bottom: 2px; }
   .score-input { width: 32px; height: 28px; font-size: 14px; }
   .score-box { padding: 3px; border-radius: 6px; }
   .result-status { font-size: 9px; padding: 2px 4px; min-width: 36px; }
@@ -1194,6 +1202,42 @@ function flagImg(teamName) {
   return `<img class="team-flag" src="https://flagcdn.com/w40/${code}.png" alt="${teamName}">`;
 }
 
+/* Calendrier officiel FIFA — heures françaises (CEST, UTC+2) */
+const MATCH_SCHEDULE = {
+  'A-1':{d:'11/06',h:'21:00'},'A-2':{d:'12/06',h:'04:00'},'A-3':{d:'19/06',h:'03:00'},
+  'A-4':{d:'18/06',h:'18:00'},'A-5':{d:'25/06',h:'03:00'},'A-6':{d:'25/06',h:'03:00'},
+  'B-1':{d:'12/06',h:'21:00'},'B-2':{d:'13/06',h:'21:00'},'B-3':{d:'19/06',h:'00:00'},
+  'B-4':{d:'18/06',h:'21:00'},'B-5':{d:'24/06',h:'21:00'},'B-6':{d:'24/06',h:'21:00'},
+  'C-1':{d:'14/06',h:'00:00'},'C-2':{d:'14/06',h:'03:00'},'C-3':{d:'20/06',h:'02:30'},
+  'C-4':{d:'20/06',h:'00:00'},'C-5':{d:'25/06',h:'00:00'},'C-6':{d:'25/06',h:'00:00'},
+  'D-1':{d:'13/06',h:'03:00'},'D-2':{d:'14/06',h:'06:00'},'D-3':{d:'19/06',h:'21:00'},
+  'D-4':{d:'20/06',h:'05:00'},'D-5':{d:'26/06',h:'04:00'},'D-6':{d:'26/06',h:'04:00'},
+  'E-1':{d:'14/06',h:'19:00'},'E-2':{d:'15/06',h:'01:00'},'E-3':{d:'20/06',h:'22:00'},
+  'E-4':{d:'21/06',h:'02:00'},'E-5':{d:'25/06',h:'22:00'},'E-6':{d:'25/06',h:'22:00'},
+  'F-1':{d:'14/06',h:'22:00'},'F-2':{d:'15/06',h:'04:00'},'F-3':{d:'20/06',h:'19:00'},
+  'F-4':{d:'21/06',h:'06:00'},'F-5':{d:'26/06',h:'01:00'},'F-6':{d:'26/06',h:'01:00'},
+  'G-1':{d:'15/06',h:'21:00'},'G-2':{d:'16/06',h:'03:00'},'G-3':{d:'21/06',h:'21:00'},
+  'G-4':{d:'22/06',h:'03:00'},'G-5':{d:'27/06',h:'05:00'},'G-6':{d:'27/06',h:'05:00'},
+  'H-1':{d:'15/06',h:'18:00'},'H-2':{d:'16/06',h:'00:00'},'H-3':{d:'21/06',h:'18:00'},
+  'H-4':{d:'22/06',h:'00:00'},'H-5':{d:'27/06',h:'02:00'},'H-6':{d:'27/06',h:'02:00'},
+  'I-1':{d:'16/06',h:'21:00'},'I-2':{d:'17/06',h:'00:00'},'I-3':{d:'22/06',h:'23:00'},
+  'I-4':{d:'23/06',h:'02:00'},'I-5':{d:'26/06',h:'21:00'},'I-6':{d:'26/06',h:'21:00'},
+  'J-1':{d:'17/06',h:'03:00'},'J-2':{d:'17/06',h:'06:00'},'J-3':{d:'22/06',h:'19:00'},
+  'J-4':{d:'23/06',h:'05:00'},'J-5':{d:'28/06',h:'04:00'},'J-6':{d:'28/06',h:'04:00'},
+  'K-1':{d:'17/06',h:'19:00'},'K-2':{d:'18/06',h:'04:00'},'K-3':{d:'23/06',h:'19:00'},
+  'K-4':{d:'24/06',h:'04:00'},'K-5':{d:'28/06',h:'01:30'},'K-6':{d:'28/06',h:'01:30'},
+  'L-1':{d:'17/06',h:'22:00'},'L-2':{d:'18/06',h:'01:00'},'L-3':{d:'23/06',h:'22:00'},
+  'L-4':{d:'24/06',h:'01:00'},'L-5':{d:'27/06',h:'23:00'},'L-6':{d:'27/06',h:'23:00'}
+};
+
+const MOIS_FR = ['','janv.','févr.','mars','avr.','mai','juin','juil.','août','sept.','oct.','nov.','déc.'];
+function formatMatchDate(matchId) {
+  const s = MATCH_SCHEDULE[matchId];
+  if (!s) return '';
+  const [jour, mois] = s.d.split('/');
+  return `${parseInt(jour)} ${MOIS_FR[parseInt(mois)]} · ${s.h}`;
+}
+
 // Génère les 6 matchs (chaque équipe contre toutes les autres) par groupe
 function generateMatches() {
   const matches = [];
@@ -1378,10 +1422,13 @@ function renderPronos() {
       ${matches.map(m => `
         <div class="match-row">
           <div class="team-name home">${m.home} ${flagImg(m.home)}</div>
-          <div class="score-box">
-            <input type="number" min="0" max="20" class="score-input" data-match="${m.id}" data-side="home" value="${draftPronos[m.id]?.home ?? ''}">
-            <span class="score-sep">:</span>
-            <input type="number" min="0" max="20" class="score-input" data-match="${m.id}" data-side="away" value="${draftPronos[m.id]?.away ?? ''}">
+          <div>
+            <div class="match-datetime">${formatMatchDate(m.id)}</div>
+            <div class="score-box">
+              <input type="number" min="0" max="20" class="score-input" data-match="${m.id}" data-side="home" value="${draftPronos[m.id]?.home ?? ''}">
+              <span class="score-sep">:</span>
+              <input type="number" min="0" max="20" class="score-input" data-match="${m.id}" data-side="away" value="${draftPronos[m.id]?.away ?? ''}">
+            </div>
           </div>
           <div class="team-name away">${flagImg(m.away)} ${m.away}</div>
         </div>
@@ -1493,10 +1540,13 @@ function renderResults() {
         return `
           <div class="result-match-row">
             <div class="team-name home">${m.home} ${flagImg(m.home)}</div>
-            <div class="score-box">
-              <input type="number" min="0" max="20" class="score-input result-input" data-match="${m.id}" data-side="home" value="${r?.home ?? ''}">
-              <span class="score-sep">:</span>
-              <input type="number" min="0" max="20" class="score-input result-input" data-match="${m.id}" data-side="away" value="${r?.away ?? ''}">
+            <div>
+              <div class="match-datetime">${formatMatchDate(m.id)}</div>
+              <div class="score-box">
+                <input type="number" min="0" max="20" class="score-input result-input" data-match="${m.id}" data-side="home" value="${r?.home ?? ''}">
+                <span class="score-sep">:</span>
+                <input type="number" min="0" max="20" class="score-input result-input" data-match="${m.id}" data-side="away" value="${r?.away ?? ''}">
+              </div>
             </div>
             <div class="team-name away">${flagImg(m.away)} ${m.away}</div>
             <div class="result-status ${isDone ? 'status-done' : 'status-pending'}">${isDone ? 'OK' : '···'}</div>
@@ -1778,7 +1828,10 @@ function openPlayerDetail(playerId) {
           return `
             <div class="detail-match-row">
               <div class="team-name home">${m.home} ${flagImg(m.home)}</div>
-              <span class="prono-score">${prono?.home ?? '?'}-${prono?.away ?? '?'}</span>
+              <div style="text-align:center">
+                <div class="match-datetime">${formatMatchDate(m.id)}</div>
+                <span class="prono-score">${prono?.home ?? '?'}-${prono?.away ?? '?'}</span>
+              </div>
               <div class="team-name away">${flagImg(m.away)} ${m.away}</div>
               ${resultDisplay}
               <span class="points-tag ${ptsLabel.cls}">${ptsLabel.txt}</span>
