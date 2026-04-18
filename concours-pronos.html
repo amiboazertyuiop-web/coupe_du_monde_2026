@@ -1160,7 +1160,15 @@ main { max-width: 1400px; margin: 0 auto; padding: 32px 24px 80px; }
   </div>
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <script>
+/* ============================================================
+ * SUPABASE CLIENT
+ * ============================================================ */
+const SUPABASE_URL = 'https://ornzaizhdedctncvvewj.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9ybnphaXpoZGVkY3RuY3Z2ZXdqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY1MDM2MjAsImV4cCI6MjA5MjA3OTYyMH0.Ndw2ggCpBHVwXmi_ykP6KmEjAxpakpk9pnNqvTXAQdc';
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
 /* ============================================================
  * DONNÉES · 72 matchs Coupe du Monde 2026 (phase de poule)
  * 48 équipes, 12 groupes (A-L), 6 matchs par groupe.
@@ -1257,44 +1265,45 @@ function generateMatches() {
 const ALL_MATCHES = generateMatches();
 
 /* ============================================================
- * STATE & STORAGE
+ * STATE (en mémoire, chargé depuis Supabase)
  * ============================================================ */
-const STORAGE_KEY = 'wc2026_concours_v1';
-
-const defaultState = {
-  adminUsername: 'admin',
-  adminPassword: 'admin',
-  accounts: [],       // [{username, password, role: 'viewer'|'referee'}]
-  players: [],        // [{id, name, pronos: {matchId: {home, away}}, createdAt}]
-  results: {},        // {matchId: {home, away}}
-  ticketPrice: 20,    // Prix du ticket d'entrée en €
-  session: null       // {role: 'admin'|'viewer'|'referee', name}
+let state = {
+  accounts: [],
+  players: [],
+  results: {},
+  ticketPrice: 20,
+  session: null
 };
 
-function loadState() {
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    if (!raw) return structuredClone(defaultState);
-    const parsed = JSON.parse(raw);
-    const merged = { ...defaultState, ...parsed, session: null };
-    // Migration : anciens comptes sans role → viewer par défaut
-    merged.accounts = (merged.accounts || []).map(a => ({
-      ...a,
-      role: a.role || 'viewer'
-    }));
-    return merged;
-  } catch {
-    return structuredClone(defaultState);
-  }
-}
+async function loadFromSupabase() {
+  // Comptes (sans le mot de passe hashé)
+  const { data: accounts } = await sb.from('accounts').select('id,username,role,firstname,lastname,email,must_change_password');
+  state.accounts = (accounts || []).filter(a => a.role !== 'admin');
 
-function saveState() {
-  const toSave = { ...state };
-  delete toSave.session;
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(toSave));
-}
+  // Joueurs + pronos
+  const { data: players } = await sb.from('players').select('*');
+  const { data: allPronos } = await sb.from('pronos').select('*');
+  state.players = (players || []).map(p => {
+    const pronos = {};
+    (allPronos || []).filter(pr => pr.player_id === p.id).forEach(pr => {
+      pronos[pr.match_id] = { home: pr.home, away: pr.away };
+    });
+    return { id: p.id, name: p.name, pronos, createdAt: p.created_at };
+  });
 
-let state = loadState();
+  // Résultats
+  const { data: results } = await sb.from('results').select('*');
+  state.results = {};
+  (results || []).forEach(r => {
+    state.results[r.match_id] = { home: r.home, away: r.away };
+  });
+
+  // Settings
+  const { data: settings } = await sb.from('settings').select('*');
+  (settings || []).forEach(s => {
+    if (s.key === 'ticket_price') state.ticketPrice = parseInt(s.value) || 20;
+  });
+}
 
 /* ============================================================
  * TOAST
@@ -1313,26 +1322,25 @@ function toast(message, type = 'success') {
 const $ = (sel) => document.querySelector(sel);
 const $$ = (sel) => document.querySelectorAll(sel);
 
-$('#loginForm').addEventListener('submit', (e) => {
+$('#loginForm').addEventListener('submit', async (e) => {
   e.preventDefault();
   const username = $('#username').value.trim();
   const password = $('#password').value;
   const errorEl = $('#loginError');
   errorEl.classList.add('hidden');
 
-  // Tentative admin
-  if (username === state.adminUsername && password === state.adminPassword) {
-    state.session = { role: 'admin', name: username };
-    showApp();
-    return;
-  }
+  const { data, error } = await sb.rpc('verify_login', {
+    p_username: username,
+    p_password: password
+  });
 
-  // Tentative compte (spectateur ou arbitre)
-  const account = state.accounts.find(a => a.username === username && a.password === password);
-  if (account) {
-    state.session = { role: account.role || 'viewer', name: account.username };
+  if (data && data.length > 0) {
+    const user = data[0];
+    state.session = { role: user.role, name: user.username };
+    sessionStorage.setItem('wc2026_session', JSON.stringify(state.session));
+    await loadFromSupabase();
     showApp();
-    if (account.mustChangePassword) {
+    if (user.must_change_password) {
       $('#firstLoginModal').classList.add('visible');
     }
     return;
@@ -1344,6 +1352,7 @@ $('#loginForm').addEventListener('submit', (e) => {
 
 $('#logoutBtn').addEventListener('click', () => {
   state.session = null;
+  sessionStorage.removeItem('wc2026_session');
   $('#password').value = '';
   $('#username').value = '';
   $('#app').classList.remove('visible');
@@ -1482,7 +1491,7 @@ $('#pronosReset').addEventListener('click', () => {
   }
 });
 
-$('#pronosSubmit').addEventListener('click', () => {
+$('#pronosSubmit').addEventListener('click', async () => {
   const name = $('#newPlayerName').value.trim();
   if (!name) {
     toast('Le nom du joueur est obligatoire', 'error');
@@ -1500,13 +1509,18 @@ $('#pronosSubmit').addEventListener('click', () => {
   }
   if (!confirm(`Valider définitivement les pronostics de ${name} ? Ils ne pourront plus être modifiés.`)) return;
 
-  state.players.push({
-    id: Date.now().toString(36) + Math.random().toString(36).slice(2, 7),
-    name,
-    pronos: structuredClone(draftPronos),
-    createdAt: new Date().toISOString()
-  });
-  saveState();
+  // Insérer le joueur
+  const { data: player, error: pErr } = await sb.from('players').insert({ name }).select().single();
+  if (pErr) { toast('Erreur : ' + pErr.message, 'error'); return; }
+
+  // Insérer tous les pronos
+  const pronoRows = Object.entries(draftPronos).map(([matchId, p]) => ({
+    player_id: player.id, match_id: matchId, home: p.home, away: p.away
+  }));
+  const { error: prErr } = await sb.from('pronos').insert(pronoRows);
+  if (prErr) { toast('Erreur pronos : ' + prErr.message, 'error'); return; }
+
+  await loadFromSupabase();
   draftPronos = {};
   $('#newPlayerName').value = '';
   renderPronos();
@@ -1600,14 +1614,22 @@ function updateResultsStatus() {
   });
 }
 
-$('#resultsSave').addEventListener('click', () => {
+$('#resultsSave').addEventListener('click', async () => {
   // Nettoyer partiels
   Object.keys(state.results).forEach(k => {
     if (state.results[k].home === null || state.results[k].away === null) {
       delete state.results[k];
     }
   });
-  saveState();
+  const rows = Object.entries(state.results).map(([matchId, r]) => ({
+    match_id: matchId, home: r.home, away: r.away, updated_at: new Date().toISOString()
+  }));
+  // Supprimer les anciens puis insérer
+  await sb.from('results').delete().neq('match_id', '');
+  if (rows.length > 0) {
+    const { error } = await sb.from('results').upsert(rows, { onConflict: 'match_id' });
+    if (error) { toast('Erreur : ' + error.message, 'error'); return; }
+  }
   toast('✓ Résultats enregistrés');
 });
 
@@ -1893,11 +1915,11 @@ function renderAdmin() {
     }).join('');
 
     list.querySelectorAll('[data-del-account]').forEach(btn => {
-      btn.addEventListener('click', () => {
+      btn.addEventListener('click', async () => {
         const username = btn.dataset.delAccount;
         if (confirm(`Supprimer le compte ${username} ?`)) {
-          state.accounts = state.accounts.filter(a => a.username !== username);
-          saveState();
+          await sb.from('accounts').delete().eq('username', username);
+          await loadFromSupabase();
           renderAdmin();
           toast(`Compte ${username} supprimé`);
         }
@@ -1914,17 +1936,14 @@ function renderAdmin() {
     });
 
     list.querySelectorAll('[data-change-role]').forEach(sel => {
-      sel.addEventListener('change', (e) => {
+      sel.addEventListener('change', async (e) => {
         const username = e.target.dataset.changeRole;
         const newRole = e.target.value;
-        const account = state.accounts.find(a => a.username === username);
-        if (account) {
-          account.role = newRole;
-          saveState();
-          renderAdmin();
-          const roleLabel = newRole === 'referee' ? 'arbitre' : 'spectateur';
-          toast(`Rôle de ${username} changé en ${roleLabel}`);
-        }
+        await sb.from('accounts').update({ role: newRole }).eq('username', username);
+        await loadFromSupabase();
+        renderAdmin();
+        const roleLabel = newRole === 'referee' ? 'arbitre' : 'spectateur';
+        toast(`Rôle de ${username} changé en ${roleLabel}`);
       });
     });
   }
@@ -1950,12 +1969,12 @@ function renderAdmin() {
       </div>
     `).join('');
     playersList.querySelectorAll('[data-del-player]').forEach(btn => {
-      btn.addEventListener('click', () => {
+      btn.addEventListener('click', async () => {
         const id = btn.dataset.delPlayer;
         const player = state.players.find(p => p.id === id);
         if (confirm(`Supprimer ${player.name} et tous ses pronostics ?`)) {
-          state.players = state.players.filter(p => p.id !== id);
-          saveState();
+          await sb.from('players').delete().eq('id', id);
+          await loadFromSupabase();
           renderAdmin();
           toast('Joueur supprimé');
         }
@@ -1964,31 +1983,20 @@ function renderAdmin() {
   }
 }
 
-$('#addAccountBtn').addEventListener('click', () => {
+$('#addAccountBtn').addEventListener('click', async () => {
   const username = $('#newAccountUsername').value.trim();
   const role = $('#newAccountRole').value;
   if (!username) {
     toast('Nom d\'utilisateur requis', 'error');
     return;
   }
-  if (username === state.adminUsername) {
-    toast('Ce nom est réservé à l\'administrateur', 'error');
-    return;
-  }
   if (state.accounts.some(a => a.username === username)) {
     toast('Ce nom d\'utilisateur existe déjà', 'error');
     return;
   }
-  state.accounts.push({
-    username,
-    password: '123456',
-    role,
-    firstname: '',
-    lastname: '',
-    email: '',
-    mustChangePassword: true
-  });
-  saveState();
+  const { error } = await sb.rpc('create_account', { p_username: username, p_password: '123456', p_role: role });
+  if (error) { toast('Erreur : ' + error.message, 'error'); return; }
+  await loadFromSupabase();
   $('#newAccountUsername').value = '';
   $('#newAccountRole').value = 'viewer';
   renderAdmin();
@@ -1996,19 +2004,19 @@ $('#addAccountBtn').addEventListener('click', () => {
   toast(`✓ Compte ${roleLabel} ${username} créé`);
 });
 
-$('#saveTicketPriceBtn').addEventListener('click', () => {
+$('#saveTicketPriceBtn').addEventListener('click', async () => {
   const val = parseInt($('#ticketPriceInput').value);
   if (isNaN(val) || val < 0) {
     toast('Montant invalide', 'error');
     return;
   }
+  await sb.from('settings').upsert({ key: 'ticket_price', value: String(val) });
   state.ticketPrice = val;
-  saveState();
   renderAdmin();
   toast(`✓ Ticket d'entrée mis à jour : ${val} €`);
 });
 
-$('#changeAdminPwdBtn').addEventListener('click', () => {
+$('#changeAdminPwdBtn').addEventListener('click', async () => {
   const newUser = $('#newAdminUsername').value.trim();
   const newPwd = $('#newAdminPassword').value;
   const confirmPwd = $('#confirmAdminPassword').value;
@@ -2024,19 +2032,19 @@ $('#changeAdminPwdBtn').addEventListener('click', () => {
     toast('Les mots de passe ne correspondent pas', 'error');
     return;
   }
-  // Vérifier que le username n'entre pas en conflit avec un compte spectateur
   if (state.accounts.some(a => a.username === newUser)) {
-    toast('Ce nom est déjà utilisé par un spectateur', 'error');
+    toast('Ce nom est déjà utilisé par un autre compte', 'error');
     return;
   }
-  state.adminUsername = newUser;
-  state.adminPassword = newPwd;
-  saveState();
+  // Mettre à jour username + password hashé
+  await sb.from('accounts').update({ username: newUser }).eq('username', state.session.name);
+  await sb.rpc('reset_password', { p_username: newUser, p_new_password: newPwd });
+  await sb.from('accounts').update({ must_change_password: false }).eq('username', newUser);
   $('#newAdminUsername').value = '';
   $('#newAdminPassword').value = '';
   $('#confirmAdminPassword').value = '';
-  // Mettre à jour le nom affiché dans la barre
   state.session.name = newUser;
+  sessionStorage.setItem('wc2026_session', JSON.stringify(state.session));
   $('#currentUserName').textContent = newUser;
   toast('✓ Identifiants admin modifiés');
 });
@@ -2044,7 +2052,7 @@ $('#changeAdminPwdBtn').addEventListener('click', () => {
 /* ============================================================
  * MODAL PREMIÈRE CONNEXION
  * ============================================================ */
-$('#firstLoginSaveBtn').addEventListener('click', () => {
+$('#firstLoginSaveBtn').addEventListener('click', async () => {
   const newPwd = $('#firstLoginNewPwd').value;
   const confirmPwd = $('#firstLoginConfirmPwd').value;
   if (!newPwd || newPwd.length < 4) {
@@ -2055,16 +2063,13 @@ $('#firstLoginSaveBtn').addEventListener('click', () => {
     toast('Les mots de passe ne correspondent pas', 'error');
     return;
   }
-  const account = state.accounts.find(a => a.username === state.session.name);
-  if (account) {
-    account.password = newPwd;
-    account.mustChangePassword = false;
-    saveState();
-    $('#firstLoginModal').classList.remove('visible');
-    $('#firstLoginNewPwd').value = '';
-    $('#firstLoginConfirmPwd').value = '';
-    toast('✓ Mot de passe mis à jour');
-  }
+  // On utilise reset_password car on connaît le user (session) et c'est sa première connexion
+  const { data: ok } = await sb.rpc('reset_password', { p_username: state.session.name, p_new_password: newPwd });
+  await sb.from('accounts').update({ must_change_password: false }).eq('username', state.session.name);
+  $('#firstLoginModal').classList.remove('visible');
+  $('#firstLoginNewPwd').value = '';
+  $('#firstLoginConfirmPwd').value = '';
+  toast('✓ Mot de passe mis à jour');
 });
 
 /* ============================================================
@@ -2084,17 +2089,18 @@ $('#closeEditUserModal').addEventListener('click', () => {
 $('#editUserModal').addEventListener('click', (e) => {
   if (e.target.id === 'editUserModal') $('#editUserModal').classList.remove('visible');
 });
-$('#editUserSaveBtn').addEventListener('click', () => {
+$('#editUserSaveBtn').addEventListener('click', async () => {
   const username = $('#editUserUsername').value;
-  const account = state.accounts.find(a => a.username === username);
-  if (!account) return;
-  account.firstname = $('#editUserFirstname').value.trim();
-  account.lastname = $('#editUserLastname').value.trim();
-  account.email = $('#editUserEmail').value.trim();
-  saveState();
+  const updates = {
+    firstname: $('#editUserFirstname').value.trim(),
+    lastname: $('#editUserLastname').value.trim(),
+    email: $('#editUserEmail').value.trim()
+  };
+  await sb.from('accounts').update(updates).eq('username', username);
+  await loadFromSupabase();
   $('#editUserModal').classList.remove('visible');
   renderAdmin();
-  toast(`✓ ${account.username} mis à jour`);
+  toast(`✓ ${username} mis à jour`);
 });
 
 /* ============================================================
@@ -2111,17 +2117,19 @@ $('#settingsModal').addEventListener('click', (e) => {
   if (e.target.id === 'settingsModal') $('#settingsModal').classList.remove('visible');
 });
 
-function renderSettingsModal() {
+async function renderSettingsModal() {
   const session = state.session;
   if (!session) return;
   const isAdmin = session.role === 'admin';
-  const account = isAdmin ? null : state.accounts.find(a => a.username === session.name);
+  // Charger le compte depuis Supabase (y compris admin)
+  const { data: accData } = await sb.from('accounts').select('username,role,firstname,lastname,email').eq('username', session.name).single();
+  const account = accData || null;
 
   const roleLabels = { admin: 'Administrateur', referee: 'Arbitre', viewer: 'Spectateur' };
   const pseudo = session.name;
-  const firstname = isAdmin ? '' : (account?.firstname || '');
-  const lastname = isAdmin ? '' : (account?.lastname || '');
-  const email = isAdmin ? '' : (account?.email || '');
+  const firstname = account?.firstname || '';
+  const lastname = account?.lastname || '';
+  const email = account?.email || '';
   const roleLabel = roleLabels[session.role] || 'Spectateur';
 
   const infoVal = (val) => val
@@ -2180,23 +2188,10 @@ function renderSettingsModal() {
     </div>
   `;
 
-  $('#settingsChangePwdBtn').addEventListener('click', () => {
+  $('#settingsChangePwdBtn').addEventListener('click', async () => {
     const currentPwd = $('#settingsCurrentPwd').value;
     const newPwd = $('#settingsNewPwd').value;
     const confirmPwd = $('#settingsConfirmPwd').value;
-
-    // Vérifier mot de passe actuel
-    if (isAdmin) {
-      if (currentPwd !== state.adminPassword) {
-        toast('Mot de passe actuel incorrect', 'error');
-        return;
-      }
-    } else {
-      if (!account || currentPwd !== account.password) {
-        toast('Mot de passe actuel incorrect', 'error');
-        return;
-      }
-    }
 
     if (!newPwd || newPwd.length < 4) {
       toast('Nouveau mot de passe trop court (min 4 caractères)', 'error');
@@ -2207,12 +2202,17 @@ function renderSettingsModal() {
       return;
     }
 
-    if (isAdmin) {
-      state.adminPassword = newPwd;
-    } else {
-      account.password = newPwd;
+    // Vérifier l'ancien mot de passe via RPC (compare le hash)
+    const { data } = await sb.rpc('change_password', {
+      p_username: session.name,
+      p_current_password: currentPwd,
+      p_new_password: newPwd
+    });
+    if (!data) {
+      toast('Mot de passe actuel incorrect', 'error');
+      return;
     }
-    saveState();
+
     $('#settingsCurrentPwd').value = '';
     $('#settingsNewPwd').value = '';
     $('#settingsConfirmPwd').value = '';
@@ -2221,37 +2221,29 @@ function renderSettingsModal() {
 
   // Sauvegarder l'email (utilisateurs non-admin uniquement)
   const emailBtn = $('#settingsSaveEmailBtn');
-  if (emailBtn && account) {
-    emailBtn.addEventListener('click', () => {
-      account.email = $('#settingsEmailInput').value.trim();
-      saveState();
+  if (emailBtn) {
+    emailBtn.addEventListener('click', async () => {
+      const newEmail = $('#settingsEmailInput').value.trim();
+      await sb.from('accounts').update({ email: newEmail }).eq('username', session.name);
       toast('✓ Email mis à jour');
     });
   }
 }
 
 /* ============================================================
- * INIT — Seed 10 joueurs fictifs pour tests
+ * INIT — Restaurer la session et charger les données
  * ============================================================ */
-(function seedTestPlayers() {
-  if (state.players.length > 0) return;
-  const names = ['Nicolas', 'Camille', 'Yassine', 'Léa', 'Mathieu', 'Sofia', 'Antoine', 'Inès', 'Hugo', 'Fatou'];
-  names.forEach(name => {
-    const pronos = {};
-    ALL_MATCHES.forEach(m => {
-      pronos[m.id] = {
-        home: Math.floor(Math.random() * 5),
-        away: Math.floor(Math.random() * 5)
-      };
-    });
-    state.players.push({
-      id: Date.now().toString(36) + Math.random().toString(36).slice(2, 7),
-      name,
-      pronos,
-      createdAt: new Date().toISOString()
-    });
-  });
-  saveState();
+(async function init() {
+  const saved = sessionStorage.getItem('wc2026_session');
+  if (saved) {
+    try {
+      state.session = JSON.parse(saved);
+      await loadFromSupabase();
+      showApp();
+    } catch {
+      sessionStorage.removeItem('wc2026_session');
+    }
+  }
 })();
 
 </script>
