@@ -1,0 +1,2206 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Concours Pronos · Coupe du Monde 2026</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg-0: #0a0e17;
+  --bg-1: #111827;
+  --bg-2: #1a2232;
+  --bg-3: #232d42;
+  --border: #2a3447;
+  --border-hover: #3a4a6b;
+  --text: #e8edf5;
+  --text-dim: #8a95ac;
+  --text-faint: #5a6478;
+  --accent: #00d26a;
+  --accent-dark: #00a854;
+  --danger: #ff3b5c;
+  --warning: #ffb020;
+  --gold: #ffcc33;
+  --silver: #c0c8d4;
+  --bronze: #cd7f32;
+  --blue: #3b82f6;
+  --purple: #8b5cf6;
+  --shadow: 0 10px 40px rgba(0,0,0,.4);
+  --shadow-lg: 0 20px 60px rgba(0,0,0,.5);
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body {
+  font-family: 'Space Grotesk', sans-serif;
+  background: var(--bg-0);
+  color: var(--text);
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+}
+
+body {
+  background:
+    radial-gradient(ellipse 80% 50% at 20% 0%, rgba(0,210,106,.08), transparent 60%),
+    radial-gradient(ellipse 60% 40% at 80% 100%, rgba(59,130,246,.06), transparent 60%),
+    var(--bg-0);
+  background-attachment: fixed;
+}
+
+/* ============ LOGIN ============ */
+.login-screen {
+  position: fixed; inset: 0;
+  display: flex; align-items: center; justify-content: center;
+  z-index: 1000;
+  padding: 20px;
+}
+
+.login-card {
+  background: linear-gradient(180deg, var(--bg-2), var(--bg-1));
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 40px 36px;
+  width: 100%; max-width: 420px;
+  box-shadow: var(--shadow-lg);
+  position: relative;
+  overflow: hidden;
+}
+.login-card::before {
+  content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+  background: linear-gradient(90deg, #d52b1e, #ffffff, #006847);
+}
+
+.login-logo {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 48px; line-height: 1;
+  letter-spacing: .02em;
+  text-align: center;
+  margin-bottom: 6px;
+  background: linear-gradient(180deg, #fff, #8a95ac);
+  -webkit-background-clip: text; background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+.login-sub {
+  text-align: center; color: var(--text-dim);
+  font-size: 13px; letter-spacing: .15em; text-transform: uppercase;
+  margin-bottom: 32px;
+}
+
+.login-form label {
+  display: block; font-size: 12px; text-transform: uppercase;
+  letter-spacing: .1em; color: var(--text-dim); margin-bottom: 8px;
+  font-weight: 600;
+}
+.login-form input {
+  width: 100%; padding: 14px 16px;
+  background: var(--bg-0); border: 1px solid var(--border);
+  border-radius: 10px; color: var(--text);
+  font-family: inherit; font-size: 15px;
+  margin-bottom: 16px;
+  transition: all .2s;
+}
+.login-form input:focus {
+  outline: none; border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(0,210,106,.15);
+}
+.login-form button {
+  width: 100%; padding: 14px;
+  background: var(--accent); color: #001a0d;
+  border: none; border-radius: 10px;
+  font-family: inherit; font-weight: 700;
+  font-size: 15px; letter-spacing: .05em; text-transform: uppercase;
+  cursor: pointer;
+  transition: all .2s;
+}
+.login-form button:hover { background: #00e876; transform: translateY(-1px); }
+
+.login-error {
+  background: rgba(255,59,92,.1); border: 1px solid rgba(255,59,92,.3);
+  color: var(--danger); padding: 10px; border-radius: 8px;
+  font-size: 13px; margin-bottom: 16px; text-align: center;
+}
+.hidden { display: none !important; }
+
+/* ============ APP SHELL ============ */
+.app { display: none; min-height: 100vh; }
+.app.visible { display: block; }
+
+header.topbar {
+  position: sticky; top: 0; z-index: 50;
+  background: rgba(10,14,23,.85);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-bottom: 1px solid var(--border);
+}
+.topbar-inner {
+  max-width: 1400px; margin: 0 auto;
+  padding: 16px 24px;
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 16px; flex-wrap: wrap;
+}
+.brand {
+  display: flex; align-items: center; gap: 12px;
+}
+.brand-mark {
+  width: 40px; height: 40px; border-radius: 10px;
+  background: linear-gradient(135deg, #d52b1e 0%, #d52b1e 33%, #fff 33%, #fff 66%, #006847 66%);
+  position: relative;
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,.1);
+}
+.brand-mark::after {
+  content: '⚽'; position: absolute; inset: 0;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 22px;
+}
+.brand-text {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 22px; letter-spacing: .03em; line-height: 1;
+}
+.brand-text small {
+  display: block; font-family: 'JetBrains Mono', monospace;
+  font-size: 10px; letter-spacing: .2em;
+  color: var(--accent); margin-top: 2px;
+}
+
+.user-chip {
+  display: flex; align-items: center; gap: 10px;
+  padding: 8px 14px; background: var(--bg-2);
+  border: 1px solid var(--border); border-radius: 30px;
+  font-size: 13px;
+}
+.user-chip .role-badge {
+  font-size: 10px; font-weight: 700; text-transform: uppercase;
+  letter-spacing: .08em; padding: 3px 8px; border-radius: 20px;
+}
+.role-admin { background: rgba(0,210,106,.15); color: var(--accent); }
+.role-referee { background: rgba(255,176,32,.15); color: var(--warning); }
+.role-viewer { background: rgba(59,130,246,.15); color: var(--blue); }
+.chip-btn {
+  background: none; border: none; color: var(--text-dim);
+  cursor: pointer; padding: 4px;
+  display: flex; align-items: center; justify-content: center;
+  transition: color .2s;
+}
+.chip-btn svg { width: 18px; height: 18px; }
+.chip-btn.logout-btn:hover { color: var(--danger); }
+.chip-btn.settings-btn:hover { color: var(--accent); }
+
+/* ============ SETTINGS MODAL ============ */
+.settings-section {
+  margin-bottom: 24px;
+}
+.settings-section:last-child { margin-bottom: 0; }
+.settings-section-title {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 18px; letter-spacing: .03em;
+  margin-bottom: 14px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--border);
+}
+.settings-info-grid {
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+.settings-info-item {
+  padding: 12px 14px;
+  background: var(--bg-0); border: 1px solid var(--border);
+  border-radius: 8px;
+}
+.settings-info-item.full { grid-column: 1 / -1; }
+.settings-info-label {
+  font-size: 10px; text-transform: uppercase; letter-spacing: .1em;
+  color: var(--text-faint); margin-bottom: 4px; font-weight: 600;
+}
+.settings-info-value {
+  font-size: 14px; font-weight: 500; color: var(--text);
+  word-break: break-all;
+}
+.settings-info-value.empty { color: var(--text-faint); font-style: italic; }
+
+/* ============ NAV TABS ============ */
+nav.tabs {
+  max-width: 1400px; margin: 0 auto;
+  padding: 0 24px;
+  display: flex; gap: 4px; overflow-x: auto;
+  border-bottom: 1px solid var(--border);
+}
+nav.tabs button {
+  background: none; border: none;
+  padding: 18px 20px;
+  color: var(--text-dim); cursor: pointer;
+  font-family: inherit; font-size: 14px; font-weight: 600;
+  letter-spacing: .02em;
+  position: relative;
+  white-space: nowrap;
+  transition: color .2s;
+}
+nav.tabs button:hover { color: var(--text); }
+nav.tabs button.active { color: var(--text); }
+nav.tabs button.active::after {
+  content: ''; position: absolute;
+  bottom: -1px; left: 20px; right: 20px; height: 3px;
+  background: var(--accent);
+  border-radius: 3px 3px 0 0;
+}
+nav.tabs button .tab-icon {
+  font-size: 16px; margin-right: 6px;
+}
+
+/* ============ MAIN ============ */
+main { max-width: 1400px; margin: 0 auto; padding: 32px 24px 80px; }
+
+.page-title {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 40px; line-height: 1;
+  letter-spacing: .02em;
+  margin-bottom: 6px;
+}
+.page-sub {
+  color: var(--text-dim); font-size: 14px;
+  margin-bottom: 32px;
+}
+
+.view { display: none; }
+.view.active { display: block; animation: fadeIn .3s ease; }
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* ============ CARDS ============ */
+.card {
+  background: linear-gradient(180deg, var(--bg-2), var(--bg-1));
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 24px;
+  margin-bottom: 20px;
+}
+.card-header {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 20px; gap: 12px; flex-wrap: wrap;
+}
+.card-title {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 24px; letter-spacing: .03em;
+}
+.card-sub {
+  color: var(--text-dim); font-size: 13px;
+}
+
+/* ============ PRONOS PAGE ============ */
+.player-name-input {
+  width: 100%; max-width: 420px;
+  padding: 14px 18px;
+  background: var(--bg-0); border: 1px solid var(--border);
+  border-radius: 10px; color: var(--text);
+  font-family: inherit; font-size: 16px; font-weight: 500;
+  transition: all .2s;
+}
+.player-name-input:focus {
+  outline: none; border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(0,210,106,.15);
+}
+
+.groups-container {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(min(420px, 100%), 1fr));
+  gap: 16px; margin-top: 24px;
+}
+.group-card {
+  background: var(--bg-1);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  overflow: hidden;
+}
+.group-header {
+  padding: 12px 16px;
+  background: var(--bg-3);
+  display: flex; align-items: center; justify-content: space-between;
+  border-bottom: 1px solid var(--border);
+}
+.group-name {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 20px; letter-spacing: .05em;
+}
+.group-progress {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px; color: var(--text-dim);
+}
+.group-progress.done { color: var(--accent); }
+
+.match-row {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--border);
+  gap: 8px;
+}
+.match-row:last-child { border-bottom: none; }
+.match-row:hover { background: rgba(255,255,255,.02); }
+
+.team-name {
+  font-size: 13px; font-weight: 500;
+  display: flex; align-items: center; gap: 6px;
+}
+.team-name.home { justify-content: flex-end; text-align: right; }
+.team-name.away { justify-content: flex-start; }
+.team-flag {
+  width: 24px; height: 16px;
+  object-fit: cover;
+  border-radius: 2px;
+  box-shadow: 0 0 0 1px rgba(255,255,255,.1);
+  vertical-align: middle;
+  flex-shrink: 0;
+}
+
+.score-box {
+  display: flex; align-items: center; gap: 4px;
+  background: var(--bg-0); padding: 4px;
+  border-radius: 8px; border: 1px solid var(--border);
+}
+.score-input {
+  width: 38px; height: 32px;
+  background: transparent; border: none;
+  color: var(--text);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 16px; font-weight: 700;
+  text-align: center;
+  -moz-appearance: textfield;
+}
+.score-input::-webkit-outer-spin-button,
+.score-input::-webkit-inner-spin-button {
+  -webkit-appearance: none; margin: 0;
+}
+.score-input:focus { outline: none; color: var(--accent); }
+.score-sep { color: var(--text-faint); font-weight: 700; }
+
+/* ============ BUTTONS ============ */
+.btn {
+  padding: 12px 20px;
+  background: var(--bg-3); color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 10px; cursor: pointer;
+  font-family: inherit; font-size: 14px; font-weight: 600;
+  letter-spacing: .02em;
+  display: inline-flex; align-items: center; gap: 8px;
+  transition: all .15s;
+}
+.btn:hover { border-color: var(--border-hover); transform: translateY(-1px); }
+.btn-primary {
+  background: var(--accent); color: #001a0d;
+  border-color: var(--accent);
+}
+.btn-primary:hover { background: #00e876; border-color: #00e876; }
+.btn-danger {
+  background: rgba(255,59,92,.1); color: var(--danger);
+  border-color: rgba(255,59,92,.3);
+}
+.btn-danger:hover { background: rgba(255,59,92,.2); }
+.btn-sm { padding: 8px 14px; font-size: 13px; }
+.btn-icon {
+  padding: 8px; width: 34px; height: 34px;
+  justify-content: center;
+}
+.btn:disabled { opacity: .5; cursor: not-allowed; transform: none !important; }
+
+.action-bar {
+  display: flex; gap: 12px; align-items: center;
+  padding: 16px; background: var(--bg-1);
+  border: 1px solid var(--border); border-radius: 12px;
+  margin-top: 24px;
+  position: sticky; bottom: 16px; z-index: 10;
+  box-shadow: var(--shadow);
+  flex-wrap: wrap;
+}
+.action-bar-info {
+  flex: 1; font-size: 13px; color: var(--text-dim);
+}
+.action-bar-info strong { color: var(--text); }
+
+/* ============ RESULTS PAGE ============ */
+.results-groups-container {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(min(440px, 100%), 1fr));
+  gap: 16px;
+}
+.result-match-row {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr auto;
+  align-items: center;
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--border);
+  gap: 8px;
+}
+.result-match-row:last-child { border-bottom: none; }
+.result-status {
+  font-size: 10px; text-transform: uppercase; letter-spacing: .08em;
+  font-weight: 700; padding: 2px 6px; border-radius: 4px;
+  min-width: 48px; text-align: center;
+}
+.status-pending { background: var(--bg-3); color: var(--text-faint); }
+.status-done { background: rgba(0,210,106,.15); color: var(--accent); }
+
+/* ============ RANKING PAGE ============ */
+.stats-grid {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 12px; margin-bottom: 24px;
+}
+.stat-card {
+  background: var(--bg-1); border: 1px solid var(--border);
+  border-radius: 12px; padding: 16px;
+}
+.stat-label {
+  font-size: 11px; text-transform: uppercase; letter-spacing: .1em;
+  color: var(--text-dim); margin-bottom: 6px;
+}
+.stat-value {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 32px; line-height: 1;
+}
+.stat-value .unit { font-size: 14px; color: var(--text-dim); margin-left: 4px; }
+
+.ranking-table {
+  width: 100%; border-collapse: separate; border-spacing: 0;
+  background: var(--bg-1); border: 1px solid var(--border);
+  border-radius: 12px; overflow: hidden;
+}
+.ranking-table th {
+  text-align: left; padding: 14px 16px;
+  font-size: 11px; text-transform: uppercase; letter-spacing: .1em;
+  color: var(--text-dim); font-weight: 600;
+  background: var(--bg-2); border-bottom: 1px solid var(--border);
+}
+.ranking-table td {
+  padding: 14px 16px; border-bottom: 1px solid var(--border);
+  font-size: 14px;
+}
+.ranking-table tr:last-child td { border-bottom: none; }
+.ranking-row { cursor: pointer; transition: background .15s; }
+.ranking-row:hover { background: var(--bg-2); }
+.rank-position {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 22px;
+  width: 32px; height: 32px;
+  display: inline-flex; align-items: center; justify-content: center;
+  border-radius: 8px;
+  background: var(--bg-3);
+}
+.rank-1 { background: linear-gradient(135deg, var(--gold), #e8a500); color: #1a1400; }
+.rank-2 { background: linear-gradient(135deg, var(--silver), #8a95a5); color: #1a1e24; }
+.rank-3 { background: linear-gradient(135deg, var(--bronze), #a8651a); color: #fff; }
+
+.points-badge {
+  font-family: 'JetBrains Mono', monospace;
+  font-weight: 700; font-size: 14px;
+  padding: 4px 10px; border-radius: 6px;
+  background: var(--bg-3);
+}
+.points-badge.highlight { background: rgba(0,210,106,.15); color: var(--accent); }
+
+/* ============ GAINS ============ */
+.gains-grid {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 12px;
+}
+.gain-card {
+  padding: 16px; border-radius: 10px;
+  border: 1px solid var(--border);
+  background: var(--bg-0);
+  text-align: center;
+}
+.gain-card .gain-rank {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 14px; letter-spacing: .1em;
+  text-transform: uppercase;
+  margin-bottom: 4px;
+}
+.gain-card .gain-amount {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 28px; line-height: 1;
+  margin-bottom: 4px;
+}
+.gain-card .gain-player {
+  font-size: 13px; color: var(--text-dim);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.gain-gold { border-color: var(--gold); }
+.gain-gold .gain-rank { color: var(--gold); }
+.gain-gold .gain-amount { color: var(--gold); }
+.gain-silver { border-color: var(--silver); }
+.gain-silver .gain-rank { color: var(--silver); }
+.gain-silver .gain-amount { color: var(--silver); }
+.gain-bronze { border-color: var(--bronze); }
+.gain-bronze .gain-rank { color: var(--bronze); }
+.gain-bronze .gain-amount { color: var(--bronze); }
+.cagnotte-total {
+  text-align: center; padding: 16px 0 20px;
+}
+.cagnotte-total .label {
+  font-size: 12px; text-transform: uppercase; letter-spacing: .1em;
+  color: var(--text-dim); margin-bottom: 4px;
+}
+.cagnotte-total .amount {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 42px; line-height: 1;
+  color: var(--accent);
+}
+.cagnotte-total .ticket-info {
+  font-size: 12px; color: var(--text-faint); margin-top: 6px;
+}
+
+/* ============ MODAL ============ */
+.modal-backdrop {
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,.7);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  z-index: 500;
+  display: none;
+  align-items: flex-start; justify-content: center;
+  padding: 40px 20px;
+  overflow-y: auto;
+}
+.modal-backdrop.visible { display: flex; }
+.modal {
+  background: var(--bg-1);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  width: 100%; max-width: 720px;
+  box-shadow: var(--shadow-lg);
+  animation: modalIn .25s ease;
+}
+@keyframes modalIn {
+  from { opacity: 0; transform: translateY(20px) scale(.97); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+.modal-header {
+  padding: 20px 24px;
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: space-between;
+}
+.modal-title {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 26px; letter-spacing: .02em;
+}
+.modal-body { padding: 24px; max-height: 70vh; overflow-y: auto; }
+.modal-close {
+  background: var(--bg-3); border: none;
+  width: 32px; height: 32px; border-radius: 8px;
+  color: var(--text); cursor: pointer;
+  font-size: 16px;
+  transition: background .15s;
+}
+.modal-close:hover { background: var(--danger); }
+
+.detail-match-row {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr auto auto;
+  align-items: center;
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--border);
+  gap: 8px;
+  font-size: 13px;
+}
+.detail-match-row:last-child { border-bottom: none; }
+.points-tag {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px; font-weight: 700;
+  padding: 3px 8px; border-radius: 5px;
+  text-transform: uppercase;
+}
+.pt-3 { background: rgba(0,210,106,.2); color: var(--accent); }
+.pt-1 { background: rgba(59,130,246,.2); color: var(--blue); }
+.pt-0 { background: rgba(255,59,92,.15); color: var(--danger); }
+.pt-na { background: var(--bg-3); color: var(--text-faint); }
+
+.prono-score, .real-score {
+  font-family: 'JetBrains Mono', monospace;
+  font-weight: 700; font-size: 13px;
+  padding: 3px 8px; border-radius: 5px;
+  background: var(--bg-3);
+  min-width: 38px; text-align: center;
+}
+.real-score.valid { background: rgba(0,210,106,.15); color: var(--accent); }
+
+/* ============ ADMIN ============ */
+.account-form {
+  display: grid; grid-template-columns: 1fr 1fr auto; gap: 12px;
+  align-items: end;
+}
+.form-group label {
+  display: block; font-size: 11px;
+  text-transform: uppercase; letter-spacing: .1em;
+  color: var(--text-dim); margin-bottom: 6px; font-weight: 600;
+}
+.form-group input {
+  width: 100%; padding: 12px 14px;
+  background: var(--bg-0); border: 1px solid var(--border);
+  border-radius: 8px; color: var(--text);
+  font-family: inherit; font-size: 14px;
+}
+.form-group input:focus {
+  outline: none; border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(0,210,106,.15);
+}
+.role-select {
+  width: 100%; padding: 12px 14px;
+  background: var(--bg-0); border: 1px solid var(--border);
+  border-radius: 8px; color: var(--text);
+  font-family: inherit; font-size: 14px;
+  cursor: pointer;
+  appearance: none;
+  -webkit-appearance: none;
+  background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%238a95ac' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 14px center;
+  padding-right: 34px;
+}
+.role-select:focus {
+  outline: none; border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(0,210,106,.15);
+}
+
+.account-list {
+  margin-top: 20px;
+  display: flex; flex-direction: column; gap: 8px;
+}
+.account-item {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 12px 16px;
+  background: var(--bg-0); border: 1px solid var(--border);
+  border-radius: 10px;
+}
+.account-info {
+  display: flex; align-items: center; gap: 12px;
+}
+.account-avatar {
+  width: 36px; height: 36px; border-radius: 8px;
+  background: linear-gradient(135deg, var(--blue), var(--purple));
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 700; font-size: 14px; color: #fff;
+}
+.account-name { font-weight: 600; }
+.account-meta { font-size: 12px; color: var(--text-dim); }
+
+.players-admin-list {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(240px,1fr));
+  gap: 10px;
+}
+.player-admin-card {
+  padding: 14px;
+  background: var(--bg-0); border: 1px solid var(--border);
+  border-radius: 10px;
+  display: flex; align-items: center; justify-content: space-between;
+}
+
+/* ============ EMPTY STATE ============ */
+.empty-state {
+  text-align: center; padding: 60px 20px;
+  color: var(--text-dim);
+}
+.empty-state .emoji { font-size: 48px; margin-bottom: 16px; }
+.empty-state h3 {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 24px; color: var(--text);
+  letter-spacing: .03em; margin-bottom: 8px;
+}
+
+/* ============ TOAST ============ */
+.toast {
+  position: fixed; bottom: 24px; right: 24px;
+  background: var(--bg-3); border: 1px solid var(--border);
+  border-left: 3px solid var(--accent);
+  padding: 14px 18px; border-radius: 10px;
+  box-shadow: var(--shadow);
+  z-index: 2000;
+  animation: toastIn .3s ease;
+  max-width: 360px;
+}
+.toast.error { border-left-color: var(--danger); }
+@keyframes toastIn {
+  from { opacity: 0; transform: translateX(20px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+/* ============ SEARCH ============ */
+.search-bar {
+  position: relative; max-width: 360px;
+}
+.search-bar input {
+  width: 100%; padding: 10px 14px 10px 36px;
+  background: var(--bg-0); border: 1px solid var(--border);
+  border-radius: 10px; color: var(--text);
+  font-family: inherit; font-size: 14px;
+}
+.search-bar input:focus {
+  outline: none; border-color: var(--border-hover);
+}
+.search-bar::before {
+  content: '🔍'; position: absolute;
+  left: 12px; top: 50%; transform: translateY(-50%);
+  font-size: 14px; opacity: .5;
+}
+
+/* ============ RESPONSIVE — TABLET (<=768px) ============ */
+@media (max-width: 768px) {
+  .page-title { font-size: 32px; }
+  main { padding: 20px 16px 100px; }
+  .account-form { grid-template-columns: 1fr !important; }
+  .groups-container, .results-groups-container {
+    grid-template-columns: 1fr;
+  }
+  .topbar-inner { padding: 12px 16px; }
+  nav.tabs { padding: 0 12px; }
+  nav.tabs button { padding: 14px 10px; font-size: 13px; }
+  .stats-grid { grid-template-columns: repeat(2, 1fr); }
+  .gains-grid { grid-template-columns: repeat(3, 1fr); }
+  .players-admin-list { grid-template-columns: 1fr; }
+  .modal { max-width: 95vw; }
+  .modal-body { padding: 16px; }
+  .detail-match-row {
+    grid-template-columns: 1fr auto 1fr auto auto;
+    font-size: 12px;
+  }
+  .ranking-table th, .ranking-table td { padding: 10px 10px; }
+  .settings-info-grid { grid-template-columns: 1fr; }
+  .settings-info-item.full { grid-column: auto; }
+  .account-item { flex-direction: column; align-items: stretch !important; }
+  .account-item > div:last-child { justify-content: flex-start; }
+}
+
+/* ============ RESPONSIVE — MOBILE (<=480px) ============ */
+@media (max-width: 480px) {
+  .page-title { font-size: 26px; }
+  .page-sub { font-size: 13px; }
+  main { padding: 16px 10px 100px; }
+
+  /* Topbar */
+  .topbar-inner { padding: 10px 12px; gap: 10px; }
+  .brand-mark { width: 32px; height: 32px; }
+  .brand-mark::after { font-size: 17px; }
+  .brand-text { font-size: 18px; }
+  .brand-text small { font-size: 9px; }
+  .user-chip { padding: 6px 10px; font-size: 12px; gap: 6px; }
+  .user-chip .role-badge { font-size: 9px; padding: 2px 6px; }
+  .chip-btn svg { width: 16px; height: 16px; }
+
+  /* Tabs — scroll horizontal compact */
+  nav.tabs { padding: 0 8px; gap: 0; }
+  nav.tabs button { padding: 12px 8px; font-size: 12px; }
+  nav.tabs button .tab-icon { font-size: 14px; margin-right: 4px; }
+
+  /* Cards */
+  .card { padding: 16px 12px; border-radius: 10px; }
+  .card-title { font-size: 20px; }
+  .card-sub { font-size: 12px; }
+  .group-card { border-radius: 10px; }
+  .group-header { padding: 10px 12px; }
+  .group-name { font-size: 17px; }
+
+  /* Match rows — noms empilés sur petit écran */
+  .match-row, .result-match-row {
+    grid-template-columns: 1fr auto 1fr;
+    padding: 8px 8px;
+    gap: 4px;
+  }
+  .result-match-row {
+    grid-template-columns: 1fr auto 1fr auto;
+  }
+  .team-name { font-size: 11px; gap: 4px; }
+  .team-flag { width: 18px; height: 12px; }
+  .score-input { width: 32px; height: 28px; font-size: 14px; }
+  .score-box { padding: 3px; border-radius: 6px; }
+  .result-status { font-size: 9px; padding: 2px 4px; min-width: 36px; }
+
+  /* Action bar sticky bottom */
+  .action-bar {
+    padding: 12px; border-radius: 10px;
+    gap: 8px; bottom: 10px;
+    flex-direction: column; align-items: stretch;
+  }
+  .action-bar-info { text-align: center; }
+  .action-bar .btn { justify-content: center; width: 100%; }
+
+  /* Stats */
+  .stats-grid { grid-template-columns: 1fr 1fr; gap: 8px; }
+  .stat-card { padding: 12px; }
+  .stat-value { font-size: 26px; }
+  .stat-label { font-size: 10px; }
+
+  /* Gains */
+  .gains-grid { grid-template-columns: 1fr; }
+  .cagnotte-total .amount { font-size: 34px; }
+
+  /* Ranking table — horizontal scroll */
+  #rankingTableContainer { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  .ranking-table { min-width: 480px; }
+  .ranking-table th, .ranking-table td { padding: 10px 8px; font-size: 12px; }
+  .rank-position { width: 28px; height: 28px; font-size: 18px; }
+  .points-badge { font-size: 12px; padding: 3px 7px; }
+
+  /* Detail modal */
+  .modal-backdrop { padding: 16px 8px; }
+  .modal { border-radius: 12px; }
+  .modal-header { padding: 14px 16px; }
+  .modal-title { font-size: 22px; }
+  .modal-body { padding: 14px; max-height: 80vh; }
+  .detail-match-row {
+    grid-template-columns: 1fr auto 1fr auto auto;
+    padding: 8px 6px;
+    gap: 4px;
+    font-size: 11px;
+  }
+  .prono-score, .real-score { font-size: 11px; padding: 2px 6px; }
+  .points-tag { font-size: 9px; padding: 2px 5px; }
+
+  /* Login */
+  .login-card { padding: 28px 20px; border-radius: 14px; }
+  .login-logo { font-size: 38px; }
+  .login-sub { font-size: 11px; margin-bottom: 24px; }
+
+  /* Search */
+  .search-bar { max-width: 100%; }
+
+  /* Player name input */
+  .player-name-input { font-size: 14px; padding: 12px 14px; }
+
+  /* Toast */
+  .toast { left: 16px; right: 16px; max-width: none; bottom: 16px; font-size: 13px; }
+
+  /* Admin */
+  .account-item { padding: 10px 12px; border-radius: 8px; }
+  .account-avatar { width: 30px; height: 30px; font-size: 12px; border-radius: 6px; }
+  .account-name { font-size: 13px; }
+  .account-meta { font-size: 11px; }
+  .players-admin-list { grid-template-columns: 1fr; gap: 8px; }
+  .player-admin-card { padding: 10px 12px; border-radius: 8px; }
+}
+</style>
+</head>
+<body>
+
+<!-- =============== LOGIN =============== -->
+<div class="login-screen" id="loginScreen">
+  <div class="login-card">
+    <div class="login-logo">CONCOURS PRONOS</div>
+    <div class="login-sub">Coupe du Monde · 2026</div>
+
+    <form class="login-form" id="loginForm">
+      <div class="login-error hidden" id="loginError"></div>
+      <label for="username">Nom d'utilisateur</label>
+      <input type="text" id="username" autocomplete="username">
+      <label for="password">Mot de passe</label>
+      <input type="password" id="password" autocomplete="current-password">
+      <button type="submit">Se connecter</button>
+    </form>
+  </div>
+</div>
+
+<!-- =============== APP =============== -->
+<div class="app" id="app">
+
+  <header class="topbar">
+    <div class="topbar-inner">
+      <div class="brand">
+        <div class="brand-mark"></div>
+        <div class="brand-text">
+          Concours Pronos
+          <small>WORLD CUP · 2026</small>
+        </div>
+      </div>
+      <div class="user-chip">
+        <span id="currentUserName">—</span>
+        <span class="role-badge" id="currentUserRole">—</span>
+        <button class="chip-btn settings-btn" id="settingsBtn" title="Paramètres du compte">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+        </button>
+        <button class="chip-btn logout-btn" id="logoutBtn" title="Déconnexion">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+        </button>
+      </div>
+    </div>
+    <nav class="tabs" id="tabsNav">
+      <button data-view="pronos" data-roles="admin"><span class="tab-icon">📝</span>Pronostics</button>
+      <button data-view="results" data-roles="admin,referee"><span class="tab-icon">⚽</span>Résultats</button>
+      <button data-view="ranking" data-roles="admin,referee,viewer"><span class="tab-icon">🏆</span>Classement</button>
+      <button data-view="admin" data-roles="admin"><span class="tab-icon">⚙️</span>Administration</button>
+    </nav>
+  </header>
+
+  <main>
+    <!-- ========== PRONOS VIEW ========== -->
+    <section class="view active" id="view-pronos">
+      <div class="page-title">Saisir les pronostics</div>
+      <div class="page-sub">Ajoute un joueur et enregistre ses 72 pronostics. ⚠️ Une fois validés, ils ne pourront plus être modifiés.</div>
+
+      <div class="card">
+        <div class="card-header">
+          <div>
+            <div class="card-title">Nouveau joueur</div>
+            <div class="card-sub">Remplis tous les scores exacts prédits par ce participant</div>
+          </div>
+        </div>
+        <input type="text" class="player-name-input" id="newPlayerName" placeholder="Nom du joueur (ex: Nicolas)" autocomplete="off">
+      </div>
+
+      <div class="groups-container" id="pronosGroups"></div>
+
+      <div class="action-bar">
+        <div class="action-bar-info">
+          <strong id="pronosFilledCount">0</strong> / 72 matchs renseignés
+        </div>
+        <button class="btn" id="pronosReset">Effacer</button>
+        <button class="btn btn-primary" id="pronosSubmit">✓ Valider les pronostics</button>
+      </div>
+    </section>
+
+    <!-- ========== RESULTS VIEW ========== -->
+    <section class="view" id="view-results">
+      <div class="page-title">Résultats des matchs</div>
+      <div class="page-sub">Saisis le score final de chaque match. Le classement se met à jour en temps réel.</div>
+
+      <div class="results-groups-container" id="resultsGroups"></div>
+
+      <div class="action-bar">
+        <div class="action-bar-info">
+          <strong id="resultsFilledCount">0</strong> / 72 matchs renseignés
+        </div>
+        <button class="btn btn-primary" id="resultsSave">💾 Enregistrer les résultats</button>
+      </div>
+    </section>
+
+    <!-- ========== RANKING VIEW ========== -->
+    <section class="view" id="view-ranking">
+      <div class="page-title">Classement général</div>
+      <div class="page-sub">Clique sur un joueur pour voir le détail de ses pronostics</div>
+
+      <div class="stats-grid" id="rankingStats"></div>
+
+      <div class="card" id="gainsCard" style="margin-bottom:20px">
+        <div class="card-header">
+          <div class="card-title">Cagnotte & Gains</div>
+        </div>
+        <div id="gainsContainer"></div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">Podium</div>
+          <div class="search-bar">
+            <input type="text" id="rankingSearch" placeholder="Rechercher un joueur...">
+          </div>
+        </div>
+        <div id="rankingTableContainer"></div>
+      </div>
+    </section>
+
+    <!-- ========== ADMIN VIEW ========== -->
+    <section class="view" id="view-admin">
+      <div class="page-title">Administration</div>
+      <div class="page-sub">Gère les comptes utilisateurs et les pronostics enregistrés</div>
+
+      <div class="card">
+        <div class="card-header">
+          <div>
+            <div class="card-title">Comptes utilisateurs</div>
+            <div class="card-sub">Spectateur : consulte le classement · Arbitre : saisit les résultats + consulte le classement</div>
+          </div>
+        </div>
+
+        <div class="account-form" style="grid-template-columns: 1fr 1fr auto;">
+          <div class="form-group">
+            <label>Nom d'utilisateur</label>
+            <input type="text" id="newAccountUsername" autocomplete="off">
+          </div>
+          <div class="form-group">
+            <label>Rôle</label>
+            <select id="newAccountRole" class="role-select">
+              <option value="viewer">Spectateur</option>
+              <option value="referee">Arbitre</option>
+            </select>
+          </div>
+          <button class="btn btn-primary" id="addAccountBtn">+ Ajouter</button>
+        </div>
+        <div style="margin-top:8px;font-size:12px;color:var(--text-faint);">Mot de passe par défaut : <strong style="color:var(--text-dim)">123456</strong> — l'utilisateur devra le modifier à sa première connexion.</div>
+
+        <div class="account-list" id="accountList"></div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div>
+            <div class="card-title">Joueurs & pronostics</div>
+            <div class="card-sub" id="playersCountSub">0 joueur enregistré</div>
+          </div>
+        </div>
+        <div class="players-admin-list" id="playersAdminList"></div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div>
+            <div class="card-title">Ticket d'entrée</div>
+            <div class="card-sub">Chaque joueur doit payer ce montant pour participer. Gains : 60% au 1er, 30% au 2ème, 10% au 3ème.</div>
+          </div>
+        </div>
+        <div class="account-form" style="grid-template-columns: 1fr auto; max-width: 400px;">
+          <div class="form-group">
+            <label>Prix du ticket (€)</label>
+            <input type="number" id="ticketPriceInput" min="0" step="1" value="">
+          </div>
+          <button class="btn btn-primary" id="saveTicketPriceBtn">Modifier</button>
+        </div>
+        <div style="margin-top:12px; font-size:13px; color:var(--text-dim);">
+          Cagnotte actuelle : <strong id="adminCagnottePreview" style="color:var(--accent)">—</strong>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div>
+            <div class="card-title">Identifiants administrateur</div>
+            <div class="card-sub">Par défaut : admin / admin — à modifier à la 1ère utilisation</div>
+          </div>
+        </div>
+        <div class="account-form" style="grid-template-columns: 1fr 1fr 1fr auto;">
+          <div class="form-group">
+            <label>Nom d'utilisateur</label>
+            <input type="text" id="newAdminUsername" autocomplete="off">
+          </div>
+          <div class="form-group">
+            <label>Nouveau mot de passe</label>
+            <input type="password" id="newAdminPassword">
+          </div>
+          <div class="form-group">
+            <label>Confirmer</label>
+            <input type="password" id="confirmAdminPassword">
+          </div>
+          <button class="btn btn-primary" id="changeAdminPwdBtn">Modifier</button>
+        </div>
+      </div>
+    </section>
+  </main>
+</div>
+
+<!-- =============== MODAL FIRST LOGIN =============== -->
+<div class="modal-backdrop" id="firstLoginModal" style="z-index:600">
+  <div class="modal" style="max-width:420px">
+    <div class="modal-header">
+      <div class="modal-title">Changement de mot de passe obligatoire</div>
+    </div>
+    <div class="modal-body">
+      <p style="font-size:14px;color:var(--text-dim);margin-bottom:18px;">C'est ta première connexion. Tu dois choisir un nouveau mot de passe pour continuer.</p>
+      <div class="form-group" style="margin-bottom:12px">
+        <label>Nouveau mot de passe</label>
+        <input type="password" id="firstLoginNewPwd" style="width:100%;padding:12px 14px;background:var(--bg-0);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:inherit;font-size:14px;">
+      </div>
+      <div class="form-group" style="margin-bottom:16px">
+        <label>Confirmer</label>
+        <input type="password" id="firstLoginConfirmPwd" style="width:100%;padding:12px 14px;background:var(--bg-0);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:inherit;font-size:14px;">
+      </div>
+      <button class="btn btn-primary" id="firstLoginSaveBtn" style="width:100%">Valider</button>
+    </div>
+  </div>
+</div>
+
+<!-- =============== MODAL SETTINGS =============== -->
+<div class="modal-backdrop" id="settingsModal">
+  <div class="modal" style="max-width:520px">
+    <div class="modal-header">
+      <div class="modal-title">Paramètres du compte</div>
+      <button class="modal-close" id="closeSettingsModal">✕</button>
+    </div>
+    <div class="modal-body" id="settingsModalBody"></div>
+  </div>
+</div>
+
+<!-- =============== MODAL EDIT USER (admin) =============== -->
+<div class="modal-backdrop" id="editUserModal">
+  <div class="modal" style="max-width:420px">
+    <div class="modal-header">
+      <div class="modal-title" id="editUserModalTitle">Modifier l'utilisateur</div>
+      <button class="modal-close" id="closeEditUserModal">✕</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="editUserUsername">
+      <div class="form-group" style="margin-bottom:12px">
+        <label>Prénom</label>
+        <input type="text" id="editUserFirstname" style="width:100%;padding:12px 14px;background:var(--bg-0);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:inherit;font-size:14px;">
+      </div>
+      <div class="form-group" style="margin-bottom:12px">
+        <label>Nom</label>
+        <input type="text" id="editUserLastname" style="width:100%;padding:12px 14px;background:var(--bg-0);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:inherit;font-size:14px;">
+      </div>
+      <div class="form-group" style="margin-bottom:16px">
+        <label>Email</label>
+        <input type="email" id="editUserEmail" style="width:100%;padding:12px 14px;background:var(--bg-0);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:inherit;font-size:14px;">
+      </div>
+      <button class="btn btn-primary" id="editUserSaveBtn" style="width:100%">Enregistrer</button>
+    </div>
+  </div>
+</div>
+
+<!-- =============== MODAL =============== -->
+<div class="modal-backdrop" id="playerDetailModal">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title" id="detailPlayerName">Détail du joueur</div>
+      <button class="modal-close" id="closeDetailModal">✕</button>
+    </div>
+    <div class="modal-body" id="detailModalBody"></div>
+  </div>
+</div>
+
+<script>
+/* ============================================================
+ * DONNÉES · 72 matchs Coupe du Monde 2026 (phase de poule)
+ * 48 équipes, 12 groupes (A-L), 6 matchs par groupe.
+ * Les équipes non encore qualifiées sont marquées avec "*".
+ * ============================================================ */
+const GROUPS = {
+  A: ['Mexique', 'Afrique du Sud', 'Corée du Sud', 'Tchéquie'],
+  B: ['Canada', 'Bosnie', 'Qatar', 'Suisse'],
+  C: ['Brésil', 'Maroc', 'Haïti', 'Écosse'],
+  D: ['États-Unis', 'Paraguay', 'Australie', 'Turquie'],
+  E: ['Allemagne', 'Curaçao', 'Côte d\'Ivoire', 'Équateur'],
+  F: ['Pays-Bas', 'Japon', 'Suède', 'Tunisie'],
+  G: ['Belgique', 'Égypte', 'Iran', 'Nouvelle-Zélande'],
+  H: ['Espagne', 'Cap-Vert', 'Arabie saoudite', 'Uruguay'],
+  I: ['France', 'Sénégal', 'Irak', 'Norvège'],
+  J: ['Argentine', 'Algérie', 'Autriche', 'Jordanie'],
+  K: ['Portugal', 'RD Congo', 'Ouzbékistan', 'Colombie'],
+  L: ['Angleterre', 'Croatie', 'Ghana', 'Panama']
+};
+
+const TEAM_FLAGS = {
+  'Mexique': 'mx', 'Afrique du Sud': 'za', 'Corée du Sud': 'kr', 'Tchéquie': 'cz',
+  'Canada': 'ca', 'Bosnie': 'ba', 'Qatar': 'qa', 'Suisse': 'ch',
+  'Brésil': 'br', 'Maroc': 'ma', 'Haïti': 'ht', 'Écosse': 'gb-sct',
+  'États-Unis': 'us', 'Paraguay': 'py', 'Australie': 'au', 'Turquie': 'tr',
+  'Allemagne': 'de', 'Curaçao': 'cw', 'Côte d\'Ivoire': 'ci', 'Équateur': 'ec',
+  'Pays-Bas': 'nl', 'Japon': 'jp', 'Suède': 'se', 'Tunisie': 'tn',
+  'Belgique': 'be', 'Égypte': 'eg', 'Iran': 'ir', 'Nouvelle-Zélande': 'nz',
+  'Espagne': 'es', 'Cap-Vert': 'cv', 'Arabie saoudite': 'sa', 'Uruguay': 'uy',
+  'France': 'fr', 'Sénégal': 'sn', 'Irak': 'iq', 'Norvège': 'no',
+  'Argentine': 'ar', 'Algérie': 'dz', 'Autriche': 'at', 'Jordanie': 'jo',
+  'Portugal': 'pt', 'RD Congo': 'cd', 'Ouzbékistan': 'uz', 'Colombie': 'co',
+  'Angleterre': 'gb-eng', 'Croatie': 'hr', 'Ghana': 'gh', 'Panama': 'pa'
+};
+
+function flagImg(teamName) {
+  const code = TEAM_FLAGS[teamName];
+  if (!code) return '';
+  return `<img class="team-flag" src="https://flagcdn.com/w40/${code}.png" alt="${teamName}">`;
+}
+
+// Génère les 6 matchs (chaque équipe contre toutes les autres) par groupe
+function generateMatches() {
+  const matches = [];
+  const pairings = [[0,1],[2,3],[0,2],[1,3],[0,3],[1,2]];
+  Object.entries(GROUPS).forEach(([groupId, teams]) => {
+    pairings.forEach(([i, j], matchIdx) => {
+      matches.push({
+        id: `${groupId}-${matchIdx + 1}`,
+        group: groupId,
+        home: teams[i],
+        away: teams[j]
+      });
+    });
+  });
+  return matches;
+}
+const ALL_MATCHES = generateMatches();
+
+/* ============================================================
+ * STATE & STORAGE
+ * ============================================================ */
+const STORAGE_KEY = 'wc2026_concours_v1';
+
+const defaultState = {
+  adminUsername: 'admin',
+  adminPassword: 'admin',
+  accounts: [],       // [{username, password, role: 'viewer'|'referee'}]
+  players: [],        // [{id, name, pronos: {matchId: {home, away}}, createdAt}]
+  results: {},        // {matchId: {home, away}}
+  ticketPrice: 20,    // Prix du ticket d'entrée en €
+  session: null       // {role: 'admin'|'viewer'|'referee', name}
+};
+
+function loadState() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return structuredClone(defaultState);
+    const parsed = JSON.parse(raw);
+    const merged = { ...defaultState, ...parsed, session: null };
+    // Migration : anciens comptes sans role → viewer par défaut
+    merged.accounts = (merged.accounts || []).map(a => ({
+      ...a,
+      role: a.role || 'viewer'
+    }));
+    return merged;
+  } catch {
+    return structuredClone(defaultState);
+  }
+}
+
+function saveState() {
+  const toSave = { ...state };
+  delete toSave.session;
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(toSave));
+}
+
+let state = loadState();
+
+/* ============================================================
+ * TOAST
+ * ============================================================ */
+function toast(message, type = 'success') {
+  const el = document.createElement('div');
+  el.className = 'toast' + (type === 'error' ? ' error' : '');
+  el.textContent = message;
+  document.body.appendChild(el);
+  setTimeout(() => el.remove(), 3200);
+}
+
+/* ============================================================
+ * AUTH
+ * ============================================================ */
+const $ = (sel) => document.querySelector(sel);
+const $$ = (sel) => document.querySelectorAll(sel);
+
+$('#loginForm').addEventListener('submit', (e) => {
+  e.preventDefault();
+  const username = $('#username').value.trim();
+  const password = $('#password').value;
+  const errorEl = $('#loginError');
+  errorEl.classList.add('hidden');
+
+  // Tentative admin
+  if (username === state.adminUsername && password === state.adminPassword) {
+    state.session = { role: 'admin', name: username };
+    showApp();
+    return;
+  }
+
+  // Tentative compte (spectateur ou arbitre)
+  const account = state.accounts.find(a => a.username === username && a.password === password);
+  if (account) {
+    state.session = { role: account.role || 'viewer', name: account.username };
+    showApp();
+    if (account.mustChangePassword) {
+      $('#firstLoginModal').classList.add('visible');
+    }
+    return;
+  }
+
+  errorEl.textContent = 'Identifiants invalides';
+  errorEl.classList.remove('hidden');
+});
+
+$('#logoutBtn').addEventListener('click', () => {
+  state.session = null;
+  $('#password').value = '';
+  $('#username').value = '';
+  $('#app').classList.remove('visible');
+  $('#loginScreen').classList.remove('hidden');
+});
+
+function showApp() {
+  $('#loginScreen').classList.add('hidden');
+  $('#app').classList.add('visible');
+  $('#currentUserName').textContent = state.session.name;
+  const roleBadge = $('#currentUserRole');
+  const role = state.session.role;
+
+  const roleLabels = {
+    admin:   { txt: 'Admin',      cls: 'role-badge role-admin' },
+    referee: { txt: 'Arbitre',    cls: 'role-badge role-referee' },
+    viewer:  { txt: 'Spectateur', cls: 'role-badge role-viewer' }
+  };
+  const label = roleLabels[role] || roleLabels.viewer;
+  roleBadge.textContent = label.txt;
+  roleBadge.className = label.cls;
+
+  // Appliquer visibilité des onglets selon le rôle
+  $$('nav.tabs button').forEach(btn => {
+    const allowed = (btn.dataset.roles || '').split(',').map(s => s.trim());
+    btn.style.display = allowed.includes(role) ? '' : 'none';
+  });
+
+  // Vue par défaut selon le rôle
+  if (role === 'admin')        switchView('pronos');
+  else if (role === 'referee') switchView('results');
+  else                         switchView('ranking');
+}
+
+/* ============================================================
+ * NAV TABS
+ * ============================================================ */
+$$('nav.tabs button').forEach(btn => {
+  btn.addEventListener('click', () => switchView(btn.dataset.view));
+});
+
+function switchView(view) {
+  $$('nav.tabs button').forEach(b => b.classList.toggle('active', b.dataset.view === view));
+  $$('.view').forEach(v => v.classList.toggle('active', v.id === `view-${view}`));
+  if (view === 'pronos') renderPronos();
+  if (view === 'results') renderResults();
+  if (view === 'ranking') renderRanking();
+  if (view === 'admin') renderAdmin();
+}
+
+/* ============================================================
+ * VUE PRONOS
+ * ============================================================ */
+let draftPronos = {}; // {matchId: {home: int, away: int}}
+
+function renderPronos() {
+  const container = $('#pronosGroups');
+  container.innerHTML = '';
+  const byGroup = {};
+  ALL_MATCHES.forEach(m => {
+    if (!byGroup[m.group]) byGroup[m.group] = [];
+    byGroup[m.group].push(m);
+  });
+
+  Object.entries(byGroup).forEach(([groupId, matches]) => {
+    const filled = matches.filter(m => draftPronos[m.id] &&
+      draftPronos[m.id].home !== null && draftPronos[m.id].away !== null).length;
+
+    const card = document.createElement('div');
+    card.className = 'group-card';
+    card.innerHTML = `
+      <div class="group-header">
+        <div class="group-name">Groupe ${groupId}</div>
+        <div class="group-progress ${filled === 6 ? 'done' : ''}">${filled}/6</div>
+      </div>
+      ${matches.map(m => `
+        <div class="match-row">
+          <div class="team-name home">${m.home} ${flagImg(m.home)}</div>
+          <div class="score-box">
+            <input type="number" min="0" max="20" class="score-input" data-match="${m.id}" data-side="home" value="${draftPronos[m.id]?.home ?? ''}">
+            <span class="score-sep">:</span>
+            <input type="number" min="0" max="20" class="score-input" data-match="${m.id}" data-side="away" value="${draftPronos[m.id]?.away ?? ''}">
+          </div>
+          <div class="team-name away">${flagImg(m.away)} ${m.away}</div>
+        </div>
+      `).join('')}
+    `;
+    container.appendChild(card);
+  });
+
+  // Listeners
+  const allPronoInputs = Array.from(container.querySelectorAll('.score-input'));
+  allPronoInputs.forEach((input, idx) => {
+    input.addEventListener('input', (e) => {
+      const matchId = e.target.dataset.match;
+      const side = e.target.dataset.side;
+      const val = e.target.value === '' ? null : Math.max(0, Math.min(20, parseInt(e.target.value) || 0));
+      if (!draftPronos[matchId]) draftPronos[matchId] = { home: null, away: null };
+      draftPronos[matchId][side] = val;
+
+      // Auto-focus sur la case suivante
+      if (val !== null && idx + 1 < allPronoInputs.length) {
+        allPronoInputs[idx + 1].focus();
+        allPronoInputs[idx + 1].select();
+      }
+      updatePronosCount();
+
+      // Auto-refresh progress per group
+      const groupCard = e.target.closest('.group-card');
+      const groupId = groupCard.querySelector('.group-name').textContent.replace('Groupe ', '');
+      const matches = ALL_MATCHES.filter(m => m.group === groupId);
+      const filled = matches.filter(m => draftPronos[m.id] &&
+        draftPronos[m.id].home !== null && draftPronos[m.id].away !== null).length;
+      const progress = groupCard.querySelector('.group-progress');
+      progress.textContent = `${filled}/6`;
+      progress.classList.toggle('done', filled === 6);
+    });
+  });
+
+  updatePronosCount();
+}
+
+function updatePronosCount() {
+  const count = Object.values(draftPronos).filter(p => p.home !== null && p.away !== null).length;
+  $('#pronosFilledCount').textContent = count;
+}
+
+$('#pronosReset').addEventListener('click', () => {
+  if (confirm('Effacer tous les pronostics saisis ?')) {
+    draftPronos = {};
+    $('#newPlayerName').value = '';
+    renderPronos();
+  }
+});
+
+$('#pronosSubmit').addEventListener('click', () => {
+  const name = $('#newPlayerName').value.trim();
+  if (!name) {
+    toast('Le nom du joueur est obligatoire', 'error');
+    return;
+  }
+  if (state.players.some(p => p.name.toLowerCase() === name.toLowerCase())) {
+    toast('Un joueur avec ce nom existe déjà', 'error');
+    return;
+  }
+  const missing = ALL_MATCHES.filter(m => !draftPronos[m.id] ||
+    draftPronos[m.id].home === null || draftPronos[m.id].away === null);
+  if (missing.length > 0) {
+    toast(`Il manque ${missing.length} pronostic(s)`, 'error');
+    return;
+  }
+  if (!confirm(`Valider définitivement les pronostics de ${name} ? Ils ne pourront plus être modifiés.`)) return;
+
+  state.players.push({
+    id: Date.now().toString(36) + Math.random().toString(36).slice(2, 7),
+    name,
+    pronos: structuredClone(draftPronos),
+    createdAt: new Date().toISOString()
+  });
+  saveState();
+  draftPronos = {};
+  $('#newPlayerName').value = '';
+  renderPronos();
+  toast(`✓ ${name} ajouté avec succès`);
+});
+
+/* ============================================================
+ * VUE RÉSULTATS
+ * ============================================================ */
+function renderResults() {
+  const container = $('#resultsGroups');
+  container.innerHTML = '';
+  const byGroup = {};
+  ALL_MATCHES.forEach(m => {
+    if (!byGroup[m.group]) byGroup[m.group] = [];
+    byGroup[m.group].push(m);
+  });
+
+  Object.entries(byGroup).forEach(([groupId, matches]) => {
+    const filled = matches.filter(m => state.results[m.id]).length;
+    const card = document.createElement('div');
+    card.className = 'group-card';
+    card.innerHTML = `
+      <div class="group-header">
+        <div class="group-name">Groupe ${groupId}</div>
+        <div class="group-progress ${filled === 6 ? 'done' : ''}">${filled}/6</div>
+      </div>
+      ${matches.map(m => {
+        const r = state.results[m.id];
+        const isDone = r && r.home !== null && r.away !== null;
+        return `
+          <div class="result-match-row">
+            <div class="team-name home">${m.home} ${flagImg(m.home)}</div>
+            <div class="score-box">
+              <input type="number" min="0" max="20" class="score-input result-input" data-match="${m.id}" data-side="home" value="${r?.home ?? ''}">
+              <span class="score-sep">:</span>
+              <input type="number" min="0" max="20" class="score-input result-input" data-match="${m.id}" data-side="away" value="${r?.away ?? ''}">
+            </div>
+            <div class="team-name away">${flagImg(m.away)} ${m.away}</div>
+            <div class="result-status ${isDone ? 'status-done' : 'status-pending'}">${isDone ? 'OK' : '···'}</div>
+          </div>
+        `;
+      }).join('')}
+    `;
+    container.appendChild(card);
+  });
+
+  const allResultInputs = Array.from(container.querySelectorAll('.result-input'));
+  allResultInputs.forEach((input, idx) => {
+    input.addEventListener('input', (e) => {
+      const matchId = e.target.dataset.match;
+      const side = e.target.dataset.side;
+      const val = e.target.value === '' ? null : Math.max(0, Math.min(20, parseInt(e.target.value) || 0));
+      if (!state.results[matchId]) state.results[matchId] = { home: null, away: null };
+      state.results[matchId][side] = val;
+
+      // Auto-focus sur la case suivante
+      if (val !== null && idx + 1 < allResultInputs.length) {
+        allResultInputs[idx + 1].focus();
+        allResultInputs[idx + 1].select();
+      }
+
+      // Si les deux sont null, on enlève
+      if (state.results[matchId].home === null && state.results[matchId].away === null) {
+        delete state.results[matchId];
+      }
+      updateResultsStatus();
+    });
+  });
+  updateResultsStatus();
+}
+
+function updateResultsStatus() {
+  const count = Object.values(state.results).filter(r =>
+    r.home !== null && r.away !== null).length;
+  $('#resultsFilledCount').textContent = count;
+
+  // Mise à jour statuts visuels
+  $$('.result-match-row').forEach(row => {
+    const input = row.querySelector('.result-input');
+    if (!input) return;
+    const matchId = input.dataset.match;
+    const r = state.results[matchId];
+    const status = row.querySelector('.result-status');
+    const isDone = r && r.home !== null && r.away !== null;
+    status.className = 'result-status ' + (isDone ? 'status-done' : 'status-pending');
+    status.textContent = isDone ? 'OK' : '···';
+  });
+}
+
+$('#resultsSave').addEventListener('click', () => {
+  // Nettoyer partiels
+  Object.keys(state.results).forEach(k => {
+    if (state.results[k].home === null || state.results[k].away === null) {
+      delete state.results[k];
+    }
+  });
+  saveState();
+  toast('✓ Résultats enregistrés');
+});
+
+/* ============================================================
+ * VUE CLASSEMENT
+ * ============================================================ */
+function computePoints(prono, result) {
+  if (!prono || !result ||
+      prono.home === null || prono.away === null ||
+      result.home === null || result.away === null) {
+    return null;
+  }
+  // Score exact → 3 pts
+  if (prono.home === result.home && prono.away === result.away) return 3;
+  // 1X2 correct → 1 pt
+  const pronoOutcome = Math.sign(prono.home - prono.away);
+  const resultOutcome = Math.sign(result.home - result.away);
+  if (pronoOutcome === resultOutcome) return 1;
+  return 0;
+}
+
+function computePlayerStats(player) {
+  let total = 0, exact = 0, oneX2 = 0, wrong = 0, played = 0;
+  ALL_MATCHES.forEach(m => {
+    const pts = computePoints(player.pronos[m.id], state.results[m.id]);
+    if (pts !== null) {
+      played++;
+      total += pts;
+      if (pts === 3) exact++;
+      else if (pts === 1) oneX2++;
+      else wrong++;
+    }
+  });
+  return { total, exact, oneX2, wrong, played };
+}
+
+function renderRanking() {
+  // Stats globales
+  const totalPlayers = state.players.length;
+  const matchesPlayed = Object.values(state.results).filter(r =>
+    r.home !== null && r.away !== null).length;
+  const allStats = state.players.map(p => ({ p, s: computePlayerStats(p) }));
+  const leader = allStats.sort((a, b) => b.s.total - a.s.total)[0];
+
+  const cagnotte = totalPlayers * state.ticketPrice;
+  const gains = [
+    { pct: 60, label: '1er', cls: 'gain-gold' },
+    { pct: 30, label: '2ème', cls: 'gain-silver' },
+    { pct: 10, label: '3ème', cls: 'gain-bronze' }
+  ];
+
+  // Trouver les 3 premiers (avec gestion des égalités)
+  const sorted3 = allStats.sort((a, b) => {
+    if (b.s.total !== a.s.total) return b.s.total - a.s.total;
+    if (b.s.exact !== a.s.exact) return b.s.exact - a.s.exact;
+    return a.p.name.localeCompare(b.p.name);
+  });
+
+  $('#rankingStats').innerHTML = `
+    <div class="stat-card">
+      <div class="stat-label">Joueurs</div>
+      <div class="stat-value">${totalPlayers}</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Matchs joués</div>
+      <div class="stat-value">${matchesPlayed}<span class="unit">/ 72</span></div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Leader</div>
+      <div class="stat-value" style="font-size:22px;">${leader ? leader.p.name : '—'}</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Meilleur score</div>
+      <div class="stat-value">${leader ? leader.s.total : 0}<span class="unit">pts</span></div>
+    </div>
+  `;
+
+  $('#gainsContainer').innerHTML = `
+    <div class="cagnotte-total">
+      <div class="label">Cagnotte totale</div>
+      <div class="amount">${cagnotte} €</div>
+      <div class="ticket-info">${totalPlayers} joueur(s) × ${state.ticketPrice} € par ticket</div>
+    </div>
+    <div class="gains-grid">
+      ${gains.map((g, i) => {
+        const amount = Math.round(cagnotte * g.pct / 100);
+        const player = sorted3[i];
+        return `
+          <div class="gain-card ${g.cls}">
+            <div class="gain-rank">${g.label} — ${g.pct}%</div>
+            <div class="gain-amount">${amount} €</div>
+            <div class="gain-player">${player ? player.p.name : '—'}</div>
+          </div>
+        `;
+      }).join('')}
+    </div>
+  `;
+
+  renderRankingTable('');
+}
+
+function renderRankingTable(filter) {
+  const container = $('#rankingTableContainer');
+  if (state.players.length === 0) {
+    container.innerHTML = `
+      <div class="empty-state">
+        <div class="emoji">🤷</div>
+        <h3>Aucun joueur</h3>
+        <p>Ajoute des joueurs depuis l'onglet Pronostics</p>
+      </div>`;
+    return;
+  }
+
+  const sorted = state.players
+    .map(p => ({ p, s: computePlayerStats(p) }))
+    .filter(x => !filter || x.p.name.toLowerCase().includes(filter.toLowerCase()))
+    .sort((a, b) => {
+      if (b.s.total !== a.s.total) return b.s.total - a.s.total;
+      if (b.s.exact !== a.s.exact) return b.s.exact - a.s.exact;
+      return a.p.name.localeCompare(b.p.name);
+    });
+
+  container.innerHTML = `
+    <table class="ranking-table">
+      <thead>
+        <tr>
+          <th style="width:60px">Rang</th>
+          <th>Joueur</th>
+          <th style="text-align:center">Exacts</th>
+          <th style="text-align:center">1X2</th>
+          <th style="text-align:center">Ratés</th>
+          <th style="text-align:right">Points</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${sorted.map((x, i) => {
+          // Calcul du vrai rang (égalité = même rang)
+          const realRank = state.players
+            .map(p => computePlayerStats(p).total)
+            .filter(t => t > x.s.total).length + 1;
+          return `
+            <tr class="ranking-row" data-player-id="${x.p.id}">
+              <td><span class="rank-position rank-${realRank <= 3 ? realRank : ''}">${realRank}</span></td>
+              <td style="font-weight:600">${x.p.name}</td>
+              <td style="text-align:center"><span class="points-badge ${x.s.exact > 0 ? 'highlight' : ''}">${x.s.exact}</span></td>
+              <td style="text-align:center"><span class="points-badge">${x.s.oneX2}</span></td>
+              <td style="text-align:center"><span class="points-badge">${x.s.wrong}</span></td>
+              <td style="text-align:right"><span class="points-badge highlight" style="font-size:16px">${x.s.total}</span></td>
+            </tr>
+          `;
+        }).join('')}
+      </tbody>
+    </table>
+  `;
+
+  container.querySelectorAll('.ranking-row').forEach(row => {
+    row.addEventListener('click', () => openPlayerDetail(row.dataset.playerId));
+  });
+}
+
+$('#rankingSearch').addEventListener('input', (e) => {
+  renderRankingTable(e.target.value);
+});
+
+/* ============================================================
+ * MODAL DÉTAIL JOUEUR
+ * ============================================================ */
+function openPlayerDetail(playerId) {
+  const player = state.players.find(p => p.id === playerId);
+  if (!player) return;
+
+  const stats = computePlayerStats(player);
+  $('#detailPlayerName').textContent = player.name;
+
+  // Regrouper par groupe
+  const byGroup = {};
+  ALL_MATCHES.forEach(m => {
+    if (!byGroup[m.group]) byGroup[m.group] = [];
+    byGroup[m.group].push(m);
+  });
+
+  const body = `
+    <div class="stats-grid" style="margin-bottom:20px">
+      <div class="stat-card">
+        <div class="stat-label">Total</div>
+        <div class="stat-value">${stats.total}<span class="unit">pts</span></div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Scores exacts</div>
+        <div class="stat-value" style="color:var(--accent)">${stats.exact}</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">1X2 correct</div>
+        <div class="stat-value" style="color:var(--blue)">${stats.oneX2}</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Ratés</div>
+        <div class="stat-value" style="color:var(--danger)">${stats.wrong}</div>
+      </div>
+    </div>
+    ${Object.entries(byGroup).map(([groupId, matches]) => `
+      <div class="group-card" style="margin-bottom:12px">
+        <div class="group-header">
+          <div class="group-name">Groupe ${groupId}</div>
+        </div>
+        ${matches.map(m => {
+          const prono = player.pronos[m.id];
+          const result = state.results[m.id];
+          const pts = computePoints(prono, result);
+          const ptsLabel =
+            pts === 3 ? { cls: 'pt-3', txt: '+3 pts' } :
+            pts === 1 ? { cls: 'pt-1', txt: '+1 pt' } :
+            pts === 0 ? { cls: 'pt-0', txt: '0 pt' } :
+            { cls: 'pt-na', txt: '—' };
+          const resultDisplay = result && result.home !== null && result.away !== null
+            ? `<span class="real-score valid">${result.home}-${result.away}</span>`
+            : `<span class="real-score">—</span>`;
+          return `
+            <div class="detail-match-row">
+              <div class="team-name home">${m.home} ${flagImg(m.home)}</div>
+              <span class="prono-score">${prono?.home ?? '?'}-${prono?.away ?? '?'}</span>
+              <div class="team-name away">${flagImg(m.away)} ${m.away}</div>
+              ${resultDisplay}
+              <span class="points-tag ${ptsLabel.cls}">${ptsLabel.txt}</span>
+            </div>
+          `;
+        }).join('')}
+      </div>
+    `).join('')}
+  `;
+  $('#detailModalBody').innerHTML = body;
+  $('#playerDetailModal').classList.add('visible');
+}
+
+$('#closeDetailModal').addEventListener('click', () => {
+  $('#playerDetailModal').classList.remove('visible');
+});
+$('#playerDetailModal').addEventListener('click', (e) => {
+  if (e.target.id === 'playerDetailModal') {
+    $('#playerDetailModal').classList.remove('visible');
+  }
+});
+
+/* ============================================================
+ * VUE ADMIN
+ * ============================================================ */
+function renderAdmin() {
+  // Accounts
+  const list = $('#accountList');
+  if (state.accounts.length === 0) {
+    list.innerHTML = `<div class="empty-state"><p>Aucun compte créé</p></div>`;
+  } else {
+    list.innerHTML = state.accounts.map(a => {
+      const role = a.role || 'viewer';
+      const roleLabel = role === 'referee' ? 'Arbitre' : 'Spectateur';
+      const roleClass = role === 'referee' ? 'role-referee' : 'role-viewer';
+      const fullName = [a.firstname, a.lastname].filter(Boolean).join(' ');
+      return `
+        <div class="account-item" style="flex-wrap:wrap;gap:10px;">
+          <div class="account-info" style="flex:1;min-width:200px;">
+            <div class="account-avatar">${a.username[0].toUpperCase()}</div>
+            <div>
+              <div class="account-name">
+                ${a.username}
+                <span class="role-badge ${roleClass}" style="margin-left:8px;font-size:10px;">${roleLabel}</span>
+              </div>
+              <div class="account-meta">${fullName || 'Nom non renseigné'}${a.email ? ' · ' + a.email : ''}</div>
+            </div>
+          </div>
+          <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;">
+            <button class="btn btn-sm" data-edit-user="${a.username}">✏️ Modifier</button>
+            <select class="role-select" data-change-role="${a.username}" style="padding:8px 30px 8px 12px;font-size:12px;width:auto;">
+              <option value="viewer" ${role === 'viewer' ? 'selected' : ''}>Spectateur</option>
+              <option value="referee" ${role === 'referee' ? 'selected' : ''}>Arbitre</option>
+            </select>
+            <button class="btn btn-danger btn-sm" data-del-account="${a.username}">Supprimer</button>
+          </div>
+        </div>
+      `;
+    }).join('');
+
+    list.querySelectorAll('[data-del-account]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const username = btn.dataset.delAccount;
+        if (confirm(`Supprimer le compte ${username} ?`)) {
+          state.accounts = state.accounts.filter(a => a.username !== username);
+          saveState();
+          renderAdmin();
+          toast(`Compte ${username} supprimé`);
+        }
+      });
+    });
+
+    list.querySelectorAll('[data-edit-user]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const username = btn.dataset.editUser;
+        const account = state.accounts.find(a => a.username === username);
+        if (!account) return;
+        openEditUserModal(account);
+      });
+    });
+
+    list.querySelectorAll('[data-change-role]').forEach(sel => {
+      sel.addEventListener('change', (e) => {
+        const username = e.target.dataset.changeRole;
+        const newRole = e.target.value;
+        const account = state.accounts.find(a => a.username === username);
+        if (account) {
+          account.role = newRole;
+          saveState();
+          renderAdmin();
+          const roleLabel = newRole === 'referee' ? 'arbitre' : 'spectateur';
+          toast(`Rôle de ${username} changé en ${roleLabel}`);
+        }
+      });
+    });
+  }
+
+  // Ticket price
+  $('#ticketPriceInput').value = state.ticketPrice;
+  const cagnotte = state.players.length * state.ticketPrice;
+  $('#adminCagnottePreview').textContent = `${cagnotte} € (${state.players.length} × ${state.ticketPrice} €)`;
+
+  // Players
+  $('#playersCountSub').textContent = `${state.players.length} joueur(s) enregistré(s)`;
+  const playersList = $('#playersAdminList');
+  if (state.players.length === 0) {
+    playersList.innerHTML = `<div class="empty-state" style="grid-column:1/-1"><p>Aucun joueur</p></div>`;
+  } else {
+    playersList.innerHTML = state.players.map(p => `
+      <div class="player-admin-card">
+        <div>
+          <div style="font-weight:600">${p.name}</div>
+          <div style="font-size:11px;color:var(--text-dim);font-family:'JetBrains Mono',monospace">${new Date(p.createdAt).toLocaleDateString('fr-FR')}</div>
+        </div>
+        <button class="btn btn-danger btn-icon" data-del-player="${p.id}" title="Supprimer">✕</button>
+      </div>
+    `).join('');
+    playersList.querySelectorAll('[data-del-player]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const id = btn.dataset.delPlayer;
+        const player = state.players.find(p => p.id === id);
+        if (confirm(`Supprimer ${player.name} et tous ses pronostics ?`)) {
+          state.players = state.players.filter(p => p.id !== id);
+          saveState();
+          renderAdmin();
+          toast('Joueur supprimé');
+        }
+      });
+    });
+  }
+}
+
+$('#addAccountBtn').addEventListener('click', () => {
+  const username = $('#newAccountUsername').value.trim();
+  const role = $('#newAccountRole').value;
+  if (!username) {
+    toast('Nom d\'utilisateur requis', 'error');
+    return;
+  }
+  if (username === state.adminUsername) {
+    toast('Ce nom est réservé à l\'administrateur', 'error');
+    return;
+  }
+  if (state.accounts.some(a => a.username === username)) {
+    toast('Ce nom d\'utilisateur existe déjà', 'error');
+    return;
+  }
+  state.accounts.push({
+    username,
+    password: '123456',
+    role,
+    firstname: '',
+    lastname: '',
+    email: '',
+    mustChangePassword: true
+  });
+  saveState();
+  $('#newAccountUsername').value = '';
+  $('#newAccountRole').value = 'viewer';
+  renderAdmin();
+  const roleLabel = role === 'referee' ? 'arbitre' : 'spectateur';
+  toast(`✓ Compte ${roleLabel} ${username} créé`);
+});
+
+$('#saveTicketPriceBtn').addEventListener('click', () => {
+  const val = parseInt($('#ticketPriceInput').value);
+  if (isNaN(val) || val < 0) {
+    toast('Montant invalide', 'error');
+    return;
+  }
+  state.ticketPrice = val;
+  saveState();
+  renderAdmin();
+  toast(`✓ Ticket d'entrée mis à jour : ${val} €`);
+});
+
+$('#changeAdminPwdBtn').addEventListener('click', () => {
+  const newUser = $('#newAdminUsername').value.trim();
+  const newPwd = $('#newAdminPassword').value;
+  const confirmPwd = $('#confirmAdminPassword').value;
+  if (!newUser) {
+    toast('Nom d\'utilisateur requis', 'error');
+    return;
+  }
+  if (!newPwd || newPwd.length < 4) {
+    toast('Mot de passe trop court (min 4 caractères)', 'error');
+    return;
+  }
+  if (newPwd !== confirmPwd) {
+    toast('Les mots de passe ne correspondent pas', 'error');
+    return;
+  }
+  // Vérifier que le username n'entre pas en conflit avec un compte spectateur
+  if (state.accounts.some(a => a.username === newUser)) {
+    toast('Ce nom est déjà utilisé par un spectateur', 'error');
+    return;
+  }
+  state.adminUsername = newUser;
+  state.adminPassword = newPwd;
+  saveState();
+  $('#newAdminUsername').value = '';
+  $('#newAdminPassword').value = '';
+  $('#confirmAdminPassword').value = '';
+  // Mettre à jour le nom affiché dans la barre
+  state.session.name = newUser;
+  $('#currentUserName').textContent = newUser;
+  toast('✓ Identifiants admin modifiés');
+});
+
+/* ============================================================
+ * MODAL PREMIÈRE CONNEXION
+ * ============================================================ */
+$('#firstLoginSaveBtn').addEventListener('click', () => {
+  const newPwd = $('#firstLoginNewPwd').value;
+  const confirmPwd = $('#firstLoginConfirmPwd').value;
+  if (!newPwd || newPwd.length < 4) {
+    toast('Mot de passe trop court (min 4 caractères)', 'error');
+    return;
+  }
+  if (newPwd !== confirmPwd) {
+    toast('Les mots de passe ne correspondent pas', 'error');
+    return;
+  }
+  const account = state.accounts.find(a => a.username === state.session.name);
+  if (account) {
+    account.password = newPwd;
+    account.mustChangePassword = false;
+    saveState();
+    $('#firstLoginModal').classList.remove('visible');
+    $('#firstLoginNewPwd').value = '';
+    $('#firstLoginConfirmPwd').value = '';
+    toast('✓ Mot de passe mis à jour');
+  }
+});
+
+/* ============================================================
+ * MODAL EDIT USER (admin)
+ * ============================================================ */
+function openEditUserModal(account) {
+  $('#editUserModalTitle').textContent = `Modifier · ${account.username}`;
+  $('#editUserUsername').value = account.username;
+  $('#editUserFirstname').value = account.firstname || '';
+  $('#editUserLastname').value = account.lastname || '';
+  $('#editUserEmail').value = account.email || '';
+  $('#editUserModal').classList.add('visible');
+}
+$('#closeEditUserModal').addEventListener('click', () => {
+  $('#editUserModal').classList.remove('visible');
+});
+$('#editUserModal').addEventListener('click', (e) => {
+  if (e.target.id === 'editUserModal') $('#editUserModal').classList.remove('visible');
+});
+$('#editUserSaveBtn').addEventListener('click', () => {
+  const username = $('#editUserUsername').value;
+  const account = state.accounts.find(a => a.username === username);
+  if (!account) return;
+  account.firstname = $('#editUserFirstname').value.trim();
+  account.lastname = $('#editUserLastname').value.trim();
+  account.email = $('#editUserEmail').value.trim();
+  saveState();
+  $('#editUserModal').classList.remove('visible');
+  renderAdmin();
+  toast(`✓ ${account.username} mis à jour`);
+});
+
+/* ============================================================
+ * MODAL PARAMÈTRES COMPTE
+ * ============================================================ */
+$('#settingsBtn').addEventListener('click', () => {
+  renderSettingsModal();
+  $('#settingsModal').classList.add('visible');
+});
+$('#closeSettingsModal').addEventListener('click', () => {
+  $('#settingsModal').classList.remove('visible');
+});
+$('#settingsModal').addEventListener('click', (e) => {
+  if (e.target.id === 'settingsModal') $('#settingsModal').classList.remove('visible');
+});
+
+function renderSettingsModal() {
+  const session = state.session;
+  if (!session) return;
+  const isAdmin = session.role === 'admin';
+  const account = isAdmin ? null : state.accounts.find(a => a.username === session.name);
+
+  const roleLabels = { admin: 'Administrateur', referee: 'Arbitre', viewer: 'Spectateur' };
+  const pseudo = session.name;
+  const firstname = isAdmin ? '' : (account?.firstname || '');
+  const lastname = isAdmin ? '' : (account?.lastname || '');
+  const email = isAdmin ? '' : (account?.email || '');
+  const roleLabel = roleLabels[session.role] || 'Spectateur';
+
+  const infoVal = (val) => val
+    ? `<div class="settings-info-value">${val}</div>`
+    : `<div class="settings-info-value empty">Non renseigné</div>`;
+
+  $('#settingsModalBody').innerHTML = `
+    <div class="settings-section">
+      <div class="settings-section-title">Informations du compte</div>
+      <div class="settings-info-grid">
+        <div class="settings-info-item">
+          <div class="settings-info-label">Pseudo</div>
+          <div class="settings-info-value">${pseudo}</div>
+        </div>
+        <div class="settings-info-item">
+          <div class="settings-info-label">Rôle</div>
+          <div class="settings-info-value">${roleLabel}</div>
+        </div>
+        <div class="settings-info-item">
+          <div class="settings-info-label">Prénom</div>
+          ${infoVal(firstname)}
+        </div>
+        <div class="settings-info-item">
+          <div class="settings-info-label">Nom</div>
+          ${infoVal(lastname)}
+        </div>
+        <div class="settings-info-item full">
+          <div class="settings-info-label">Email</div>
+          ${isAdmin
+            ? infoVal(email)
+            : `<div style="display:flex;gap:8px;align-items:center;margin-top:4px;">
+                <input type="email" id="settingsEmailInput" value="${email}" placeholder="votre@email.com"
+                  style="flex:1;padding:8px 12px;background:var(--bg-2);border:1px solid var(--border);border-radius:6px;color:var(--text);font-family:inherit;font-size:13px;">
+                <button class="btn btn-primary btn-sm" id="settingsSaveEmailBtn">OK</button>
+              </div>`
+          }
+        </div>
+      </div>
+    </div>
+
+    <div class="settings-section">
+      <div class="settings-section-title">Modifier le mot de passe</div>
+      <div class="form-group" style="margin-bottom:10px">
+        <label>Mot de passe actuel</label>
+        <input type="password" id="settingsCurrentPwd" style="width:100%;padding:12px 14px;background:var(--bg-0);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:inherit;font-size:14px;">
+      </div>
+      <div class="form-group" style="margin-bottom:10px">
+        <label>Nouveau mot de passe</label>
+        <input type="password" id="settingsNewPwd" style="width:100%;padding:12px 14px;background:var(--bg-0);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:inherit;font-size:14px;">
+      </div>
+      <div class="form-group" style="margin-bottom:14px">
+        <label>Confirmer</label>
+        <input type="password" id="settingsConfirmPwd" style="width:100%;padding:12px 14px;background:var(--bg-0);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:inherit;font-size:14px;">
+      </div>
+      <button class="btn btn-primary" id="settingsChangePwdBtn" style="width:100%">Modifier le mot de passe</button>
+    </div>
+  `;
+
+  $('#settingsChangePwdBtn').addEventListener('click', () => {
+    const currentPwd = $('#settingsCurrentPwd').value;
+    const newPwd = $('#settingsNewPwd').value;
+    const confirmPwd = $('#settingsConfirmPwd').value;
+
+    // Vérifier mot de passe actuel
+    if (isAdmin) {
+      if (currentPwd !== state.adminPassword) {
+        toast('Mot de passe actuel incorrect', 'error');
+        return;
+      }
+    } else {
+      if (!account || currentPwd !== account.password) {
+        toast('Mot de passe actuel incorrect', 'error');
+        return;
+      }
+    }
+
+    if (!newPwd || newPwd.length < 4) {
+      toast('Nouveau mot de passe trop court (min 4 caractères)', 'error');
+      return;
+    }
+    if (newPwd !== confirmPwd) {
+      toast('Les mots de passe ne correspondent pas', 'error');
+      return;
+    }
+
+    if (isAdmin) {
+      state.adminPassword = newPwd;
+    } else {
+      account.password = newPwd;
+    }
+    saveState();
+    $('#settingsCurrentPwd').value = '';
+    $('#settingsNewPwd').value = '';
+    $('#settingsConfirmPwd').value = '';
+    toast('✓ Mot de passe modifié avec succès');
+  });
+
+  // Sauvegarder l'email (utilisateurs non-admin uniquement)
+  const emailBtn = $('#settingsSaveEmailBtn');
+  if (emailBtn && account) {
+    emailBtn.addEventListener('click', () => {
+      account.email = $('#settingsEmailInput').value.trim();
+      saveState();
+      toast('✓ Email mis à jour');
+    });
+  }
+}
+
+/* ============================================================
+ * INIT — Seed 10 joueurs fictifs pour tests
+ * ============================================================ */
+(function seedTestPlayers() {
+  if (state.players.length > 0) return;
+  const names = ['Nicolas', 'Camille', 'Yassine', 'Léa', 'Mathieu', 'Sofia', 'Antoine', 'Inès', 'Hugo', 'Fatou'];
+  names.forEach(name => {
+    const pronos = {};
+    ALL_MATCHES.forEach(m => {
+      pronos[m.id] = {
+        home: Math.floor(Math.random() * 5),
+        away: Math.floor(Math.random() * 5)
+      };
+    });
+    state.players.push({
+      id: Date.now().toString(36) + Math.random().toString(36).slice(2, 7),
+      name,
+      pronos,
+      createdAt: new Date().toISOString()
+    });
+  });
+  saveState();
+})();
+
+</script>
+</body>
+</html>
