@@ -960,7 +960,7 @@ main { max-width: 1400px; margin: 0 auto; padding: 32px 24px 80px; }
     </div>
     <nav class="tabs" id="tabsNav">
       <button data-view="pronos" data-roles="admin"><span class="tab-icon">📝</span>Saisie pronos</button>
-      <button data-view="voir-pronos" data-roles="admin,referee,viewer"><span class="tab-icon">👁️</span>Pronostics</button>
+      <button data-view="voir-pronos" data-roles="viewer"><span class="tab-icon">👁️</span>Mes pronos</button>
       <button data-view="results" data-roles="admin,referee"><span class="tab-icon">⚽</span>Résultats</button>
       <button data-view="ranking" data-roles="admin,referee,viewer"><span class="tab-icon">🏆</span>Classement</button>
       <button data-view="admin" data-roles="admin"><span class="tab-icon">⚙️</span>Administration</button>
@@ -1034,15 +1034,11 @@ main { max-width: 1400px; margin: 0 auto; padding: 32px 24px 80px; }
       </div>
     </section>
 
-    <!-- ========== VOIR PRONOS VIEW ========== -->
+    <!-- ========== MES PRONOS VIEW ========== -->
     <section class="view" id="view-voir-pronos">
-      <div class="page-title">Pronostics des joueurs</div>
-      <div class="page-sub">Consulte les pronostics de chaque participant</div>
-
-      <div class="search-bar" style="margin-bottom:20px">
-        <input type="text" id="voirPronosSearch" placeholder="Rechercher un joueur...">
-      </div>
-      <div class="players-admin-list" id="voirPronosList" style="grid-template-columns:repeat(auto-fill,minmax(280px,1fr))"></div>
+      <div class="page-title">Mes pronostics</div>
+      <div class="page-sub">Retrouve ici tous tes pronostics pour la phase de poules</div>
+      <div id="mesPronosContainer"></div>
     </section>
 
     <!-- ========== ADMIN VIEW ========== -->
@@ -1330,7 +1326,7 @@ async function loadFromSupabase() {
     (allPronos || []).filter(pr => pr.player_id === p.id).forEach(pr => {
       pronos[pr.match_id] = { home: pr.home, away: pr.away };
     });
-    return { id: p.id, name: p.name, pronos, createdAt: p.created_at };
+    return { id: p.id, name: p.name, pronos, createdAt: p.created_at, accountId: p.account_id };
   });
 
   // Résultats
@@ -1378,7 +1374,7 @@ $('#loginForm').addEventListener('submit', async (e) => {
 
   if (data && data.length > 0) {
     const user = data[0];
-    state.session = { role: user.role, name: user.username };
+    state.session = { role: user.role, name: user.username, accountId: user.id };
     sessionStorage.setItem('wc2026_session', JSON.stringify(state.session));
     await loadFromSupabase();
     showApp();
@@ -1565,9 +1561,11 @@ $('#pronosSubmit').addEventListener('click', async () => {
 
   // Créer automatiquement un compte spectateur pour ce joueur
   const username = name.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]/g, '');
-  const { error: accErr } = await sb.rpc('create_account', { p_username: username, p_password: '123456', p_role: 'viewer' });
+  const { data: newAccountId, error: accErr } = await sb.rpc('create_account', { p_username: username, p_password: '123456', p_role: 'viewer' });
   let accountMsg = '';
-  if (!accErr) {
+  if (!accErr && newAccountId) {
+    // Lier le compte au joueur
+    await sb.from('players').update({ account_id: newAccountId }).eq('id', player.id);
     accountMsg = ` · Compte créé : ${username}`;
   }
 
@@ -1579,46 +1577,89 @@ $('#pronosSubmit').addEventListener('click', async () => {
 });
 
 /* ============================================================
- * VUE VOIR PRONOS (lecture seule)
+ * VUE MES PRONOS (lecture seule, joueur connecté)
  * ============================================================ */
-function renderVoirPronos(filter = '') {
-  const container = $('#voirPronosList');
-  const filtered = state.players
-    .filter(p => !filter || p.name.toLowerCase().includes(filter.toLowerCase()))
-    .sort((a, b) => a.name.localeCompare(b.name));
+function renderVoirPronos() {
+  const container = $('#mesPronosContainer');
+  if (!state.session) return;
 
-  if (filtered.length === 0) {
+  // Trouver le joueur lié au compte connecté
+  const myPlayer = state.players.find(p => p.accountId === state.session.accountId);
+
+  if (!myPlayer) {
     container.innerHTML = `
-      <div class="empty-state" style="grid-column:1/-1">
+      <div class="empty-state">
         <div class="emoji">📋</div>
-        <h3>${filter ? 'Aucun résultat' : 'Aucun joueur'}</h3>
-        <p>${filter ? 'Essaie un autre nom' : 'Les pronostics apparaîtront ici une fois saisis'}</p>
+        <h3>Aucun pronostic</h3>
+        <p>Tes pronostics n'ont pas encore été saisis par l'administrateur</p>
       </div>`;
     return;
   }
 
-  container.innerHTML = filtered.map(p => {
-    const stats = computePlayerStats(p);
-    return `
-      <div class="player-pronos-card" data-view-player="${p.id}">
-        <div class="player-pronos-avatar">${p.name[0].toUpperCase()}</div>
-        <div class="player-pronos-info">
-          <div class="player-pronos-name">${p.name}</div>
-          <div class="player-pronos-meta">${stats.total} pts · ${stats.exact} exacts · ${stats.played}/72 joués</div>
-        </div>
-        <div class="player-pronos-arrow">›</div>
-      </div>
-    `;
-  }).join('');
+  const stats = computePlayerStats(myPlayer);
 
-  container.querySelectorAll('[data-view-player]').forEach(card => {
-    card.addEventListener('click', () => openPlayerDetail(card.dataset.viewPlayer));
+  // Regrouper par groupe
+  const byGroup = {};
+  ALL_MATCHES.forEach(m => {
+    if (!byGroup[m.group]) byGroup[m.group] = [];
+    byGroup[m.group].push(m);
   });
-}
 
-$('#voirPronosSearch').addEventListener('input', (e) => {
-  renderVoirPronos(e.target.value);
-});
+  container.innerHTML = `
+    <div class="stats-grid" style="margin-bottom:20px">
+      <div class="stat-card">
+        <div class="stat-label">Total</div>
+        <div class="stat-value">${stats.total}<span class="unit">pts</span></div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Scores exacts</div>
+        <div class="stat-value" style="color:var(--accent)">${stats.exact}</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">1X2 correct</div>
+        <div class="stat-value" style="color:var(--blue)">${stats.oneX2}</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Ratés</div>
+        <div class="stat-value" style="color:var(--danger)">${stats.wrong}</div>
+      </div>
+    </div>
+    <div class="groups-container">
+      ${Object.entries(byGroup).map(([groupId, matches]) => `
+        <div class="group-card">
+          <div class="group-header">
+            <div class="group-name">Groupe ${groupId}</div>
+          </div>
+          ${matches.map(m => {
+            const prono = myPlayer.pronos[m.id];
+            const result = state.results[m.id];
+            const pts = computePoints(prono, result);
+            const ptsLabel =
+              pts === 3 ? { cls: 'pt-3', txt: '+3' } :
+              pts === 1 ? { cls: 'pt-1', txt: '+1' } :
+              pts === 0 ? { cls: 'pt-0', txt: '0' } :
+              { cls: 'pt-na', txt: '—' };
+            const resultDisplay = result && result.home !== null && result.away !== null
+              ? `<span class="real-score valid">${result.home}-${result.away}</span>`
+              : '';
+            return `
+              <div class="match-row" style="grid-template-columns:1fr auto auto 1fr auto;cursor:default">
+                <div class="team-name home">${m.home} ${flagImg(m.home)}</div>
+                <div style="text-align:center">
+                  <div class="match-datetime">${formatMatchDate(m.id)}</div>
+                  <span class="prono-score">${prono?.home ?? '?'} - ${prono?.away ?? '?'}</span>
+                </div>
+                ${resultDisplay}
+                <div class="team-name away">${flagImg(m.away)} ${m.away}</div>
+                <span class="points-tag ${ptsLabel.cls}">${ptsLabel.txt}</span>
+              </div>
+            `;
+          }).join('')}
+        </div>
+      `).join('')}
+    </div>
+  `;
+}
 
 /* ============================================================
  * VUE RÉSULTATS
