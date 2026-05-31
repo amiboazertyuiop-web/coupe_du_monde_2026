@@ -646,7 +646,7 @@ main { max-width: 1400px; margin: 0 auto; padding: 32px 24px 80px; }
   padding: 3px 8px; border-radius: 5px;
   text-transform: uppercase;
 }
-.pt-3 { background: rgba(0,210,106,.2); color: var(--accent); }
+.pt-2 { background: rgba(0,210,106,.2); color: var(--accent); }
 .pt-1 { background: rgba(59,130,246,.2); color: var(--blue); }
 .pt-0 { background: rgba(255,59,92,.15); color: var(--danger); }
 .pt-na { background: var(--bg-3); color: var(--text-faint); }
@@ -1635,7 +1635,7 @@ function renderVoirPronos() {
             const result = state.results[m.id];
             const pts = computePoints(prono, result);
             const ptsLabel =
-              pts === 3 ? { cls: 'pt-3', txt: '+3' } :
+              pts === 2 ? { cls: 'pt-2', txt: '+2' } :
               pts === 1 ? { cls: 'pt-1', txt: '+1' } :
               pts === 0 ? { cls: 'pt-0', txt: '0' } :
               { cls: 'pt-na', txt: '—' };
@@ -1776,9 +1776,9 @@ function computePoints(prono, result) {
       result.home === null || result.away === null) {
     return null;
   }
-  // Score exact → 3 pts
-  if (prono.home === result.home && prono.away === result.away) return 3;
-  // 1X2 correct → 1 pt
+  // Score exact (1X2 correct + score exact) → 2 pts
+  if (prono.home === result.home && prono.away === result.away) return 2;
+  // 1X2 correct (bon vainqueur ou match nul) → 1 pt
   const pronoOutcome = Math.sign(prono.home - prono.away);
   const resultOutcome = Math.sign(result.home - result.away);
   if (pronoOutcome === resultOutcome) return 1;
@@ -1792,7 +1792,7 @@ function computePlayerStats(player) {
     if (pts !== null) {
       played++;
       total += pts;
-      if (pts === 3) exact++;
+      if (pts === 2) exact++;
       else if (pts === 1) oneX2++;
       else wrong++;
     }
@@ -1974,7 +1974,7 @@ function openPlayerDetail(playerId) {
           const result = state.results[m.id];
           const pts = computePoints(prono, result);
           const ptsLabel =
-            pts === 3 ? { cls: 'pt-3', txt: '+3 pts' } :
+            pts === 2 ? { cls: 'pt-2', txt: '+2 pts' } :
             pts === 1 ? { cls: 'pt-1', txt: '+1 pt' } :
             pts === 0 ? { cls: 'pt-0', txt: '0 pt' } :
             { cls: 'pt-na', txt: '—' };
